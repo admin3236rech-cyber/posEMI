@@ -1,7 +1,9 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
+	<script src="https://unpkg.com/html5-qrcode"></script>
+	<script src="https://unpkg.com/html5-qrcode"></script>
+	<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Punto de Venta</title>
 
@@ -85,6 +87,11 @@
     margin-bottom:12px;
   "
 >
+	<button class="btn-cargar" onclick="iniciarEscaner()">
+  📷 Escanear código
+	</button>
+
+<div id="reader" style="display:none;"></div>
   <div id="listaProductos"></div>
 
   <h2>Carrito</h2>
@@ -128,6 +135,8 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz2mzbagjmu6tQH-28eyPfF
 let productos = [];
 let carrito = [];
 let usuarioActual = "";
+let escaner = null;
+let escaneando = false;
 
 async function login() {
   const pin = document.getElementById("pin").value.trim();
