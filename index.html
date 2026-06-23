@@ -446,15 +446,26 @@ function iniciarEscaner() {
     },
     (codigoLeido) => {
 
-      alert("Código leído: " + codigoLeido);
+  const codigo = codigoLeido.trim();
 
-      escaner.stop();
+  const producto = productos.find(p =>
+    String(p.codigo).trim() === codigo
+  );
 
-      escaneando = false;
+  if (!producto) {
+    alert("Producto no encontrado: " + codigo);
+    return;
+  }
 
-      document.getElementById("reader").style.display = "none";
+  agregarAlCarrito(producto.codigo);
 
-    },
+  escaner.stop();
+
+  escaneando = false;
+
+  document.getElementById("reader").style.display = "none";
+
+},
     (error) => {
       // Ignorar errores de lectura
     }
