@@ -2,7 +2,6 @@
 <html lang="es">
 <head>
 	<script src="https://unpkg.com/html5-qrcode"></script>
-	<script src="https://unpkg.com/html5-qrcode"></script>
 	<meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Punto de Venta</title>
@@ -432,6 +431,8 @@ function iniciarEscaner() {
 
   if (escaneando) return;
 
+  alert("Intentando abrir cámara...");
+
   document.getElementById("reader").style.display = "block";
 
   escaner = new Html5Qrcode("reader");
@@ -457,7 +458,15 @@ function iniciarEscaner() {
     (error) => {
       // Ignorar errores de lectura
     }
-  );
+
+  ).catch(err => {
+
+    alert("Error cámara: " + err);
+
+    escaneando = false;
+
+    document.getElementById("reader").style.display = "none";
+  });
 }
 </script>
 
