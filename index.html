@@ -428,6 +428,37 @@ if (data.ok) {
 }
   
 }
+function iniciarEscaner() {
+
+  if (escaneando) return;
+
+  document.getElementById("reader").style.display = "block";
+
+  escaner = new Html5Qrcode("reader");
+  escaneando = true;
+
+  escaner.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: 250
+    },
+    (codigoLeido) => {
+
+      alert("Código leído: " + codigoLeido);
+
+      escaner.stop();
+
+      escaneando = false;
+
+      document.getElementById("reader").style.display = "none";
+
+    },
+    (error) => {
+      // Ignorar errores de lectura
+    }
+  );
+}
 </script>
 
 </body>
