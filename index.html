@@ -123,6 +123,35 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
     Cambio: $0.00
   </div>
 </div>
+	<div id="pantallaAdmin" style="display:none;">
+
+  <h1>Administración</h1>
+
+  <button class="btn-cargar">
+    📦 Productos
+  </button>
+
+  <button class="btn-cargar">
+    📋 Inventario
+  </button>
+
+  <button class="btn-cargar">
+    📊 Reportes
+  </button>
+
+  <button class="btn-cargar">
+    👤 Usuarios
+  </button>
+
+  <button
+    class="btn-eliminar"
+    style="width:100%;"
+    onclick="regresarVenta()"
+  >
+    ⬅️ Regresar
+  </button>
+
+</div>
 
  <button id="btnCobrar" class="btn-cobrar" onclick="cobrar()">Cobrar</button>
 <button
@@ -493,7 +522,20 @@ function iniciarEscaner() {
   });
 }
 function mostrarAdmin() {
-  alert("Módulo administración en construcción");
+
+  document.getElementById("pantallaVenta")
+    .style.display = "none";
+
+  document.getElementById("pantallaAdmin")
+    .style.display = "block";
+}
+function regresarVenta() {
+
+  document.getElementById("pantallaAdmin")
+    .style.display = "none";
+
+  document.getElementById("pantallaVenta")
+    .style.display = "block";
 }
 </script>
 
