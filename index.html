@@ -7,7 +7,109 @@
   <title>Punto de Venta</title>
 
   <style>
-    body { font-family: Arial; background:#f3f4f6; margin:0; padding:16px; }
+    body {
+  font-family: Arial;
+  background:#fff8e7;
+  margin:0;
+  padding:14px;
+}
+
+.logo-pos {
+  text-align:center;
+  background:#064e2f;
+  padding:14px;
+  border-radius:18px;
+  margin-bottom:14px;
+  color:white;
+}
+
+.logo-pos img {
+  max-width:180px;
+  width:70%;
+}
+
+.usuario-pos {
+  font-size:14px;
+  margin-top:6px;
+  color:#fff3d1;
+}
+
+button {
+  padding:12px;
+  font-size:16px;
+  border:none;
+  border-radius:12px;
+  background:#0b8043;
+  color:white;
+  margin-top:8px;
+  cursor:pointer;
+}
+
+.btn-cargar {
+  width:100%;
+  margin-bottom:12px;
+  background:#0b8043;
+}
+
+.btn-eliminar {
+  background:#d93025;
+}
+
+.btn-cobrar {
+  background:#064e2f;
+  width:100%;
+  font-size:22px;
+  font-weight:bold;
+}
+
+.item-carrito {
+  background:white;
+  padding:8px 10px;
+  margin-bottom:6px;
+  border-radius:10px;
+  box-shadow:0 1px 3px rgba(0,0,0,.12);
+}
+
+.item-linea {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+
+.item-nombre {
+  font-size:15px;
+  font-weight:bold;
+}
+
+.item-info {
+  font-size:14px;
+  color:#555;
+}
+
+.item-importe {
+  font-size:16px;
+  color:#0b8043;
+  font-weight:bold;
+  white-space:nowrap;
+}
+
+.item-botones button {
+  padding:6px 10px;
+  font-size:14px;
+  margin-top:4px;
+}
+
+#total {
+  background:#f97316;
+  color:white;
+  padding:16px;
+  border-radius:14px;
+  font-size:26px;
+  text-align:center;
+  font-weight:bold;
+  margin-top:12px;
+}
     h1, h2 { text-align:center; }
     button {
       padding:12px;
@@ -65,7 +167,10 @@
 
 <div id="pantallaVenta" style="display:none;">
   
-<h1>Punto de Venta</h1>
+<div class="logo-pos">
+  <img src="logo-emi.png" alt="Abarrotes EMI">
+  <div class="usuario-pos" id="usuarioPantalla">Usuario</div>
+</div>
 
   <button class="btn-cargar" onclick="cargarProductos()">Cargar productos</button>
 
@@ -197,6 +302,8 @@ async function login() {
       document.getElementById("pantallaVenta").style.display = "block";
 
       document.getElementById("estado").innerText = "Usuario: " + usuarioActual;
+	document.getElementById("usuarioPantalla").innerText =
+  usuarioActual + " · " + rolActual;
 
       cargarProductos();
 	cambiarMetodoPago();
@@ -343,14 +450,21 @@ function renderCarrito() {
     const div = document.createElement("div");
     div.className = "item-carrito";
 
-    div.innerHTML = `
-      <div class="nombre">${item.producto}</div>
-      <div class="detalle">Cantidad: ${item.cantidad}</div>
-      <div class="detalle">Precio: $${item.precio.toFixed(2)}</div>
-      <div class="precio">Importe: $${importe.toFixed(2)}</div>
-      <button onclick="agregarAlCarrito('${item.codigo}')">+</button>
-      <button class="btn-eliminar" onclick="quitarDelCarrito('${item.codigo}')">-</button>
-    `;
+   div.innerHTML = `
+  <div class="item-linea">
+    <div>
+      <div class="item-nombre">${item.producto}</div>
+      <div class="item-info">x${item.cantidad} · $${item.precio.toFixed(2)}</div>
+    </div>
+
+    <div class="item-importe">$${importe.toFixed(2)}</div>
+  </div>
+
+  <div class="item-botones">
+    <button onclick="agregarAlCarrito('${item.codigo}')">+</button>
+    <button class="btn-eliminar" onclick="quitarDelCarrito('${item.codigo}')">-</button>
+  </div>
+`;
 
     contenedor.appendChild(div);
   });
