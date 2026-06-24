@@ -167,6 +167,17 @@ button {
     margin:auto;
   "
 ></div>
+	<div
+  id="mensajePOS"
+  style="
+    display:none;
+    padding:10px;
+    margin:10px 0;
+    border-radius:10px;
+    text-align:center;
+    font-weight:bold;
+  "
+></div>
 
   <h2>Carrito</h2>
   <div id="carrito"></div>
@@ -553,7 +564,7 @@ function iniciarEscaner() {
     { facingMode: "environment" },
     {
       fps: 10,
-      qrbox: 250
+      qrbox: 180
     },
     (codigoLeido) => {
 
