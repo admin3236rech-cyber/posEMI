@@ -123,7 +123,18 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
     Cambio: $0.00
   </div>
 </div>
-	<div id="pantallaAdmin" style="display:none;">
+	
+ <button id="btnCobrar" class="btn-cobrar" onclick="cobrar()">Cobrar</button>
+<button
+  id="btnAdmin"
+  class="btn-cargar"
+  onclick="mostrarAdmin()"
+  style="display:none; background:#374151;"
+>
+  ⚙️ Administración
+</button>
+</div>
+<div id="pantallaAdmin" style="display:none;">
 
   <h1>Administración</h1>
 
@@ -152,18 +163,6 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   </button>
 
 </div>
-
- <button id="btnCobrar" class="btn-cobrar" onclick="cobrar()">Cobrar</button>
-<button
-  id="btnAdmin"
-  class="btn-cargar"
-  onclick="mostrarAdmin()"
-  style="display:none; background:#374151;"
->
-  ⚙️ Administración
-</button>
-</div>
-
 
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbz2mzbagjmu6tQH-28eyPfFRdm5z1A33CepLmeXCRbB93VaJftw_jaDyMosSVz5Mbx6ZA/exec";
