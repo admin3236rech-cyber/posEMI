@@ -125,6 +125,14 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
 </div>
 
  <button id="btnCobrar" class="btn-cobrar" onclick="cobrar()">Cobrar</button>
+<button
+  id="btnAdmin"
+  class="btn-cargar"
+  onclick="mostrarAdmin()"
+  style="display:none; background:#374151;"
+>
+  ⚙️ Administración
+</button>
 </div>
 
 
@@ -134,6 +142,7 @@ const API_URL = "https://script.google.com/macros/s/AKfycbz2mzbagjmu6tQH-28eyPfF
 let productos = [];
 let carrito = [];
 let usuarioActual = "";
+let rolActual = "";
 let escaner = null;
 let escaneando = false;
 
@@ -154,6 +163,7 @@ async function login() {
 
     if (data.ok) {
       usuarioActual = data.usuario;
+		rolActual = data.rol || "VENDEDOR";
 
       document.getElementById("pantallaLogin").style.display = "none";
       document.getElementById("pantallaVenta").style.display = "block";
@@ -162,6 +172,9 @@ async function login() {
 
       cargarProductos();
 	cambiarMetodoPago();
+	if (rolActual === "ADMIN") {
+  	document.getElementById("btnAdmin").style.display = "block";
+}
     } else {
       msg.innerText = "PIN incorrecto";
     }
@@ -478,6 +491,9 @@ function iniciarEscaner() {
 
     document.getElementById("reader").style.display = "none";
   });
+}
+function mostrarAdmin() {
+  alert("Módulo administración en construcción");
 }
 </script>
 
