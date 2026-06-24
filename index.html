@@ -284,10 +284,8 @@ async function login() {
 
 async function cargarProductos() {
   const estado = document.getElementById("estado");
-  const lista = document.getElementById("listaProductos");
 
   estado.innerText = "Cargando productos...";
-  lista.innerHTML = "";
 
   try {
     const respuesta = await fetch(API_URL + "?action=productos");
@@ -520,7 +518,6 @@ if (data.ok) {
   cambiarMetodoPago();
 
   document.getElementById("buscador").value = "";
-  mostrarProductos(productos);
 
 } else {
 
