@@ -141,7 +141,6 @@ button {
 
   <div id="estado">Esperando...</div>
 
-  <h2>Productos</h2>
 <input
   type="text"
   id="buscador"
@@ -161,7 +160,6 @@ button {
 	</button>
 
 <div id="reader" style="display:none;"></div>
-  <div id="listaProductos"></div>
 
   <h2>Carrito</h2>
   <div id="carrito"></div>
@@ -315,44 +313,34 @@ function filtrarProductos() {
   const texto =
     document.getElementById("buscador")
     .value
-    .toLowerCase();
+    .toLowerCase()
+    .trim();
+
+  if (texto === "") return;
 
   const filtrados = productos.filter(p =>
-      p.producto.toLowerCase().includes(texto)
-      ||
-      p.codigo.toLowerCase().includes(texto)
+    p.producto.toLowerCase().includes(texto)
+    ||
+    p.codigo.toLowerCase().includes(texto)
   );
 
-  mostrarProductos(filtrados);
+  if (filtrados.length === 1) {
+
+    agregarAlCarrito(filtrados[0].codigo);
+
+    document.getElementById("buscador").value = "";
+  }
 }
 
 function mostrarProductos(listaMostrar) {
 
-  const lista =
-    document.getElementById("listaProductos");
+  if (listaMostrar.length === 1) {
 
-  lista.innerHTML = "";
+    agregarAlCarrito(listaMostrar[0].codigo);
 
-  listaMostrar.forEach(p => {
+    document.getElementById("buscador").value = "";
 
-    const div = document.createElement("div");
-
-    div.className = "producto";
-
-    div.innerHTML = `
-      <div class="nombre">${p.producto}</div>
-      <div class="detalle">Código: ${p.codigo}</div>
-      <div class="detalle">Existencia: ${p.existencia}</div>
-      <div class="precio">$${p.precio.toFixed(2)}</div>
-
-      <button onclick="agregarAlCarrito('${p.codigo}')">
-        Agregar
-      </button>
-    `;
-
-    lista.appendChild(div);
-
-  });
+  }
 }
 function agregarAlCarrito(codigo) {
   const producto = productos.find(p => p.codigo === codigo);
