@@ -247,6 +247,9 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   <button class="btn-cargar">
     📦 Productos
   </button>
+	<button class="btn-cargar" onclick="mostrarCompras()">
+  🚚 Compras
+</button>
 
   <button class="btn-cargar">
     📋 Inventario
@@ -269,7 +272,50 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   </button>
 
 </div>
+<div id="pantallaCompras" style="display:none;">
 
+  <h1>Compras</h1>
+
+  <input
+    id="proveedorCompra"
+    type="text"
+    placeholder="Proveedor"
+    style="width:100%; padding:14px; font-size:18px; border-radius:10px; border:1px solid #ccc; margin-bottom:12px;"
+  >
+
+  <select
+    id="tipoCompra"
+    style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bottom:12px;"
+  >
+    <option value="COMPRA">Compra</option>
+    <option value="CONSIGNACION">Consignación</option>
+  </select>
+
+  <input
+    id="buscadorCompra"
+    type="text"
+    placeholder="Buscar producto o código..."
+    style="width:100%; padding:14px; font-size:18px; border-radius:10px; border:1px solid #ccc; margin-bottom:12px;"
+  >
+
+  <button class="btn-cargar">
+    📷 Escanear producto
+  </button>
+
+  <h2>Detalle compra</h2>
+  <div id="detalleCompra"></div>
+
+  <div id="totalCompra">TOTAL COMPRA: $0.00</div>
+
+  <button class="btn-cobrar">
+    Guardar compra
+  </button>
+
+  <button class="btn-eliminar" style="width:100%;" onclick="regresarAdminDesdeCompras()">
+    ⬅️ Regresar
+  </button>
+
+</div>
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbz2mzbagjmu6tQH-28eyPfFRdm5z1A33CepLmeXCRbB93VaJftw_jaDyMosSVz5Mbx6ZA/exec";
 
@@ -778,6 +824,15 @@ function detenerEscaner() {
     escaneando = false;
     document.getElementById("reader").style.display = "none";
   });
+}
+function mostrarCompras() {
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaCompras").style.display = "block";
+}
+
+function regresarAdminDesdeCompras() {
+  document.getElementById("pantallaCompras").style.display = "none";
+  document.getElementById("pantallaAdmin").style.display = "block";
 }
 </script>
 
