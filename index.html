@@ -465,7 +465,7 @@ function filtrarProductos() {
 
     div.onclick = () => {
 
-      agregarAlCarrito(producto.codigo);
+    agregarAlCarrito(producto.codigo, "BUSCADOR");
 
       document.getElementById("buscador").value = "";
 
@@ -491,40 +491,36 @@ function mostrarProductos(listaMostrar) {
 
   }
 }
-function agregarAlCarrito(codigo) {
+function agregarAlCarrito(codigo, origen = "BUSCADOR") {
   const producto = productos.find(p => p.codigo === codigo);
   if (!producto) return;
 
   const index = carrito.findIndex(i => i.codigo === codigo);
 
-  if (index >= 0) {
+ if (index >= 0) {
 
-    const item = carrito[index];
+  const item = carrito[index];
 
-    carrito.splice(index, 1);
-    carrito.unshift(item);
+  carrito.splice(index, 1);
+  carrito.unshift(item);
 
-    mostrarMensaje(
-      "⚠️ " + producto.producto + " ya está en carrito. Usa + para agregar otra pieza.",
-      "error"
-    );
+  if (origen === "BOTON_MAS") {
 
-  } else {
+    item.cantidad++;
 
-    carrito.unshift({
-      codigo: producto.codigo,
-      producto: producto.producto,
-      precio: producto.precio,
-      cantidad: 1
-    });
-
-    mostrarMensaje(
-      "✅ " + producto.producto + " agregado"
-    );
+    renderCarrito();
+    return;
 
   }
 
+  mostrarMensaje(
+    "⚠️ " + producto.producto + " ya está en carrito. Usa + para agregar otra pieza.",
+    "error"
+  );
+
   renderCarrito();
+  return;
+
 }
 function quitarDelCarrito(codigo) {
   const item = carrito.find(i => i.codigo === codigo);
@@ -565,7 +561,7 @@ function renderCarrito() {
   </div>
 
   <div class="item-botones">
-    <button onclick="agregarAlCarrito('${item.codigo}')">+</button>
+    <button onclick="agregarAlCarrito('${item.codigo}','BOTON_MAS')">+</button>
     <button class="btn-eliminar" onclick="quitarDelCarrito('${item.codigo}')">-</button>
   </div>
 `;
@@ -790,7 +786,7 @@ if (
 ultimoCodigoEscaneado = codigo;
 tiempoUltimoEscaneo = ahora;
 
-agregarAlCarrito(producto.codigo);
+agregarAlCarrito(producto.codigo, "ESCANER");
 
 beep();
 
