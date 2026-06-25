@@ -559,6 +559,30 @@ if (data.ok) {
 }
   
 }
+
+function beep() {
+
+  const audio = new (window.AudioContext || window.webkitAudioContext)();
+
+  const osc = audio.createOscillator();
+  const gain = audio.createGain();
+
+  osc.type = "sine";
+  osc.frequency.value = 850;
+
+  gain.gain.value = 0.08;
+
+  osc.connect(gain);
+  gain.connect(audio.destination);
+
+  osc.start();
+
+  setTimeout(() => {
+    osc.stop();
+    audio.close();
+  }, 70);
+
+}
 function mostrarMensaje(texto, tipo = "ok") {
 
   const div = document.getElementById("mensajePOS");
@@ -625,6 +649,8 @@ ultimoCodigoEscaneado = codigo;
 tiempoUltimoEscaneo = ahora;
 
 agregarAlCarrito(producto.codigo);
+
+beep();
 
 mostrarMensaje(
   "✅ " + producto.producto + " agregado"
