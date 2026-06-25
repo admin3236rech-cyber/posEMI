@@ -495,35 +495,37 @@ function agregarAlCarrito(codigo) {
   const producto = productos.find(p => p.codigo === codigo);
   if (!producto) return;
 
-  const item = carrito.find(i => i.codigo === codigo);
+  const index = carrito.findIndex(i => i.codigo === codigo);
 
-  const cantidadActual = item ? item.cantidad : 0;
-  const nuevaCantidad = cantidadActual + 1;
+  if (index >= 0) {
 
-  if (nuevaCantidad > producto.existencia) {
-    alert(
-      "⚠️ Stock insuficiente\n\n" +
-      "Producto: " + producto.producto + "\n" +
-      "Existencia: " + producto.existencia + "\n" +
-      "Cantidad en carrito: " + nuevaCantidad + "\n\n" +
-      "La venta se permitirá, pero revisa inventario."
+    const item = carrito[index];
+
+    carrito.splice(index, 1);
+    carrito.unshift(item);
+
+    mostrarMensaje(
+      "⚠️ " + producto.producto + " ya está en carrito. Usa + para agregar otra pieza.",
+      "error"
     );
-  }
 
-  if (item) {
-    item.cantidad++;
   } else {
-    carrito.push({
+
+    carrito.unshift({
       codigo: producto.codigo,
       producto: producto.producto,
       precio: producto.precio,
       cantidad: 1
     });
+
+    mostrarMensaje(
+      "✅ " + producto.producto + " agregado"
+    );
+
   }
 
   renderCarrito();
 }
-
 function quitarDelCarrito(codigo) {
   const item = carrito.find(i => i.codigo === codigo);
   if (!item) return;
