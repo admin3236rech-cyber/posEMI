@@ -559,6 +559,27 @@ if (data.ok) {
 }
   
 }
+function mostrarMensaje(texto, tipo = "ok") {
+
+  const div = document.getElementById("mensajePOS");
+
+  div.innerText = texto;
+
+  if (tipo === "ok") {
+    div.style.background = "#d1fae5";
+    div.style.color = "#065f46";
+  } else {
+    div.style.background = "#fee2e2";
+    div.style.color = "#991b1b";
+  }
+
+  div.style.display = "block";
+
+  setTimeout(() => {
+    div.style.display = "none";
+  }, 1500);
+
+}
 function iniciarEscaner() {
 
   if (escaneando) return;
@@ -584,7 +605,10 @@ function iniciarEscaner() {
   );
 
   if (!producto) {
-    alert("Producto no encontrado: " + codigo);
+   mostrarMensaje(
+  "❌ Producto no encontrado",
+  "error"
+);
     return;
   }
 
