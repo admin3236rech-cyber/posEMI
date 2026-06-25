@@ -158,6 +158,13 @@ button {
 	<button class="btn-cargar" onclick="iniciarEscaner()">
   📷 Escanear código
 	</button>
+	<button
+  class="btn-eliminar"
+  onclick="detenerEscaner()"
+  style="width:100%;"
+>
+  Cerrar escáner
+</button>
 
 <div
   id="reader"
@@ -259,6 +266,8 @@ let usuarioActual = "";
 let rolActual = "";
 let escaner = null;
 let escaneando = false;
+let ultimoCodigoEscaneado = "";
+let tiempoUltimoEscaneo = 0;
 
 async function login() {
   const pin = document.getElementById("pin").value.trim();
@@ -579,13 +588,23 @@ function iniciarEscaner() {
     return;
   }
 
-  agregarAlCarrito(producto.codigo);
+  const ahora = Date.now();
 
-  escaner.stop();
+if (
+  codigo === ultimoCodigoEscaneado &&
+  ahora - tiempoUltimoEscaneo < 1200
+) {
+  return;
+}
 
-  escaneando = false;
+ultimoCodigoEscaneado = codigo;
+tiempoUltimoEscaneo = ahora;
 
-  document.getElementById("reader").style.display = "none";
+agregarAlCarrito(producto.codigo);
+
+mostrarMensaje(
+  "✅ " + producto.producto + " agregado"
+);
 
 },
     (error) => {
@@ -616,6 +635,21 @@ function regresarVenta() {
 
   document.getElementById("pantallaVenta")
     .style.display = "block";
+}
+function detenerEscaner() {
+
+  if (!escaner) {
+    document.getElementById("reader").style.display = "none";
+    escaneando = false;
+    return;
+  }
+
+  escaner.stop().then(() => {
+    escaner.clear();
+    escaner = null;
+    escaneando = false;
+    document.getElementById("reader").style.display = "none";
+  });
 }
 </script>
 
