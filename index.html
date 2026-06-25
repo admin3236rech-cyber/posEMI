@@ -491,38 +491,61 @@ function mostrarProductos(listaMostrar) {
 
   }
 }
+
 function agregarAlCarrito(codigo, origen = "BUSCADOR") {
-  const producto = productos.find(p => p.codigo === codigo);
-  if (!producto) return;
 
-  const index = carrito.findIndex(i => i.codigo === codigo);
+    const producto = productos.find(p => p.codigo === codigo);
 
- if (index >= 0) {
+    if (!producto) return;
 
-  const item = carrito[index];
+    const index = carrito.findIndex(i => i.codigo === codigo);
 
-  carrito.splice(index, 1);
-  carrito.unshift(item);
+    // SI YA EXISTE
+    if (index >= 0) {
 
-  if (origen === "BOTON_MAS") {
+        const item = carrito[index];
 
-    item.cantidad++;
+        carrito.splice(index, 1);
+        carrito.unshift(item);
+
+        if (origen === "BOTON_MAS") {
+
+            item.cantidad++;
+
+            mostrarMensaje(
+                "➕ " + producto.producto + " x" + item.cantidad
+            );
+
+        } else {
+
+            mostrarMensaje(
+                "⚠️ " + producto.producto + " ya está en carrito. Usa + para agregar otra pieza.",
+                "error"
+            );
+
+        }
+
+        renderCarrito();
+        return;
+    }
+
+    // PRODUCTO NUEVO
+
+    carrito.unshift({
+        codigo: producto.codigo,
+        producto: producto.producto,
+        precio: producto.precio,
+        cantidad: 1
+    });
+
+    mostrarMensaje(
+        "✅ " + producto.producto + " agregado"
+    );
 
     renderCarrito();
-    return;
-
-  }
-
-  mostrarMensaje(
-    "⚠️ " + producto.producto + " ya está en carrito. Usa + para agregar otra pieza.",
-    "error"
-  );
-
-  renderCarrito();
-  return;
-
 }
-function quitarDelCarrito(codigo) {
+
+	function quitarDelCarrito(codigo) {
   const item = carrito.find(i => i.codigo === codigo);
   if (!item) return;
 
