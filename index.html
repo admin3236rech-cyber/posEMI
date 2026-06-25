@@ -707,7 +707,10 @@ function beep() {
   }, 70);
 
 }
-function mostrarMensaje(texto, tipo = "ok") {
+function esAdmin() {
+  return rolActual === "ADMIN";
+}
+	function mostrarMensaje(texto, tipo = "ok") {
 
   const div = document.getElementById("mensajePOS");
 
@@ -752,13 +755,26 @@ function iniciarEscaner() {
     String(p.codigo).trim() === codigo
   );
 
-  if (!producto) {
-   mostrarMensaje(
-  "❌ Producto no encontrado" + codigo,
-  "error"
-);
-    return;
+if (!producto) {
+
+  if (esAdmin()) {
+
+    mostrarMensaje(
+      "❌ Producto no encontrado: " + codigo + " | Puedes darlo de alta",
+      "error"
+    );
+
+  } else {
+
+    mostrarMensaje(
+      "❌ Producto no encontrado: " + codigo + " | Llame al administrador",
+      "error"
+    );
+
   }
+
+  return;
+}
 
   const ahora = Date.now();
 
