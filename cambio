@@ -226,7 +226,7 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   >
 
   <div id="cambio" style="margin-top:10px; font-size:24px; font-weight:bold; color:#0b8043;">
-    Cambio: $0.00
+    Cambio: ---
   </div>
 </div>
 	
@@ -319,14 +319,17 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
 <script>
 const API_URL = "https://script.google.com/macros/s/AKfycbz2mzbagjmu6tQH-28eyPfFRdm5z1A33CepLmeXCRbB93VaJftw_jaDyMosSVz5Mbx6ZA/exec";
 
-let productos = [];
-let carrito = [];
-let usuarioActual = "";
-let rolActual = "";
-let escaner = null;
-let escaneando = false;
-let ultimoCodigoEscaneado = "";
-let tiempoUltimoEscaneo = 0;
+const POS = {
+  modo: "VENTA",
+  usuario: "",
+  rol: "",
+  productos: [],
+  carrito: [],
+  escaner: null,
+  escaneando: false,
+  ultimoCodigoEscaneado: "",
+  tiempoUltimoEscaneo: 0
+};
 
 async function login() {
   const pin = document.getElementById("pin").value.trim();
@@ -344,21 +347,24 @@ async function login() {
     const data = await respuesta.json();
 
     if (data.ok) {
-      usuarioActual = data.usuario;
-		rolActual = data.rol || "VENDEDOR";
+      POS.usuario = data.usuario;
+      POS.rol = data.rol || "VENDEDOR";
 
       document.getElementById("pantallaLogin").style.display = "none";
       document.getElementById("pantallaVenta").style.display = "block";
 
-      document.getElementById("estado").innerText = "Usuario: " + usuarioActual;
-	document.getElementById("usuarioPantalla").innerText =
-  usuarioActual + " · " + rolActual;
+      document.getElementById("estado").innerText = "Usuario: " + POS.usuario;
+
+      document.getElementById("usuarioPantalla").innerText =
+        POS.usuario + " · " + POS.rol;
 
       cargarProductos();
-	cambiarMetodoPago();
-	if (rolActual === "ADMIN") {
-  	document.getElementById("btnAdmin").style.display = "block";
-}
+      cambiarMetodoPago();
+
+      if (POS.rol === "ADMIN") {
+        document.getElementById("btnAdmin").style.display = "block";
+      }
+
     } else {
       msg.innerText = "PIN incorrecto";
     }
@@ -382,10 +388,10 @@ async function cargarProductos() {
       return;
     }
 
-    productos = data.productos;
-    estado.innerText = "Productos cargados: " + productos.length;
+    POS.productos = data.productos;
+    estado.innerText = "Productos cargados: " + POS.productos.length;
 
-	mostrarProductos(productos);
+	mostrarProductos(POS.productos);
 
   } catch (error) {
     estado.innerText = "Error de conexión: " + error.message;
@@ -412,7 +418,7 @@ function filtrarProductos() {
 
   }
 
-  const filtrados = productos.filter(p =>
+  const filtrados = POS.productos.filter(p =>
 
     p.producto.toLowerCase().includes(texto) ||
 
@@ -429,7 +435,7 @@ function filtrarProductos() {
 
   // Si el código es exacto, agregar automáticamente
 
-  const exacto = productos.find(p =>
+  const exacto = POS.productos.find(p =>
     p.codigo.toLowerCase() === texto
   );
 
@@ -494,65 +500,62 @@ function mostrarProductos(listaMostrar) {
 
 function agregarAlCarrito(codigo, origen = "BUSCADOR") {
 
-    const producto = productos.find(p => p.codigo === codigo);
+  const producto = POS.productos.find(p => p.codigo === codigo);
 
-    if (!producto) return;
+  if (!producto) return;
 
-    const index = carrito.findIndex(i => i.codigo === codigo);
+  const index = POS.carrito.findIndex(i => i.codigo === codigo);
 
-    // SI YA EXISTE
-    if (index >= 0) {
+  if (index >= 0) {
 
-        const item = carrito[index];
+    const item = POS.carrito[index];
 
-        carrito.splice(index, 1);
-        carrito.unshift(item);
+    POS.carrito.splice(index, 1);
+    POS.carrito.unshift(item);
 
-        if (origen === "BOTON_MAS") {
+    if (origen === "BOTON_MAS") {
 
-            item.cantidad++;
+      item.cantidad++;
 
-            mostrarMensaje(
-                "➕ " + producto.producto + " x" + item.cantidad
-            );
+      mostrarMensaje(
+        "➕ " + producto.producto + " x" + item.cantidad
+      );
 
-        } else {
+    } else {
 
-            mostrarMensaje(
-                "⚠️ " + producto.producto + " ya está en carrito. Usa + para agregar otra pieza.",
-                "error"
-            );
+      mostrarMensaje(
+        "⚠️ " + producto.producto + " ya está en carrito. Usa + para agregar otra pieza.",
+        "error"
+      );
 
-        }
-
-        renderCarrito();
-        return;
     }
 
-    // PRODUCTO NUEVO
-
-    carrito.unshift({
-        codigo: producto.codigo,
-        producto: producto.producto,
-        precio: producto.precio,
-        cantidad: 1
-    });
-
-    mostrarMensaje(
-        "✅ " + producto.producto + " agregado"
-    );
-
     renderCarrito();
+    return;
+  }
+
+  POS.carrito.unshift({
+    codigo: producto.codigo,
+    producto: producto.producto,
+    precio: producto.precio,
+    cantidad: 1
+  });
+
+  mostrarMensaje(
+    "✅ " + producto.producto + " agregado"
+  );
+
+  renderCarrito();
 }
 
 	function quitarDelCarrito(codigo) {
-  const item = carrito.find(i => i.codigo === codigo);
+  const item = POS.carrito.find(i => i.codigo === codigo);
   if (!item) return;
 
   item.cantidad--;
 
   if (item.cantidad <= 0) {
-    carrito = carrito.filter(i => i.codigo !== codigo);
+    POS.carrito = POS.carrito.filter(i => i.codigo !== codigo);
   }
 
   renderCarrito();
@@ -566,7 +569,7 @@ function renderCarrito() {
 
   let total = 0;
 
-  carrito.forEach(item => {
+  POS.carrito.forEach(item => {
     const importe = item.cantidad * item.precio;
     total += importe;
 
@@ -595,14 +598,27 @@ function renderCarrito() {
 calcularCambio();
 }
 function calcularCambio() {
-  const recibido = Number(document.getElementById("importeRecibido").value || 0);
-  const total = carrito.reduce((suma, item) => suma + (item.cantidad * item.precio), 0);
+
+  const textoRecibido =
+    document.getElementById("importeRecibido").value.trim();
+
+  const total = POS.carrito.reduce(
+    (suma, item) => suma + (item.cantidad * item.precio),
+    0
+  );
+
+  // Aún no captura el importe recibido
+  if (textoRecibido === "") {
+    document.getElementById("cambio").innerText = "Cambio: ---";
+    return;
+  }
+
+  const recibido = Number(textoRecibido);
   const cambio = recibido - total;
 
   document.getElementById("cambio").innerText =
     "Cambio: $" + cambio.toFixed(2);
 }
-
 function cambiarMetodoPago() {
 
   const metodo =
@@ -631,7 +647,7 @@ async function cobrar() {
   btnCobrar.disabled = true;
   btnCobrar.innerText = "Guardando...";
 
-  if (carrito.length === 0) {
+  if (POS.carrito.length === 0) {
     btnCobrar.disabled = false;
     btnCobrar.innerText = "Cobrar";
 
@@ -639,72 +655,112 @@ async function cobrar() {
     return;
   }
 
-  const total = carrito.reduce((suma, item) => suma + (item.cantidad * item.precio), 0);
+  const total = POS.carrito.reduce(
+    (suma, item) => suma + (item.cantidad * item.precio),
+    0
+  );
+
   const metodoPago = document.getElementById("metodoPago").value;
-  const recibido = Number(document.getElementById("importeRecibido").value || 0);
 
-  if (metodoPago === "EFECTIVO" && recibido < total) {
+  const textoRecibido =
+    document.getElementById("importeRecibido").value.trim();
 
-	btnCobrar.disabled = false;
- 	 btnCobrar.innerText = "Cobrar"
-    alert("El importe recibido es menor al total");
-    return;
+  const recibido = Number(textoRecibido || 0);
+
+  // Validación para efectivo
+  if (metodoPago === "EFECTIVO") {
+
+    if (textoRecibido === "") {
+
+      btnCobrar.disabled = false;
+      btnCobrar.innerText = "Cobrar";
+
+      alert("Ingresa el importe recibido");
+      return;
+
+    }
+
+    if (recibido < total) {
+
+      btnCobrar.disabled = false;
+      btnCobrar.innerText = "Cobrar";
+
+      alert("El importe recibido es menor al total");
+      return;
+
+    }
+
   }
 
   const venta = {
     folio: "V-" + new Date().getTime(),
-    usuario: usuarioActual,
+    usuario: POS.usuario,
     total: total,
     metodoPago: metodoPago,
-    items: carrito
+    items: POS.carrito
   };
 
   try {
-    const url = API_URL
-      + "?action=guardarVenta&data="
-      + encodeURIComponent(JSON.stringify(venta));
+
+    const url =
+      API_URL +
+      "?action=guardarVenta&data=" +
+      encodeURIComponent(JSON.stringify(venta));
 
     const respuesta = await fetch(url);
+
     const texto = await respuesta.text();
 
-let data;
+    let data;
 
-try {
-  data = JSON.parse(texto);
-} catch (e) {
-  alert("Apps Script no respondió JSON. Revisa si la venta se guardó antes de cobrar otra vez.");
-  return;
-}
+    try {
 
-if (data.ok) {
+      data = JSON.parse(texto);
 
-  alert("Venta guardada correctamente");
+    } catch (e) {
 
-  carrito = [];
-  renderCarrito();
+      alert("Apps Script no respondió JSON.\nRevisa si la venta se guardó antes de cobrar nuevamente.");
 
-  document.getElementById("importeRecibido").value = "";
-  document.getElementById("cambio").innerText = "Cambio: $0.00";
+      return;
 
-  document.getElementById("metodoPago").value = "EFECTIVO";
-  cambiarMetodoPago();
+    }
 
-  document.getElementById("buscador").value = "";
+    if (data.ok) {
 
-} else {
+      alert("Venta guardada correctamente");
 
-  alert("Error: " + data.mensaje);
+      POS.carrito = [];
 
-}
+      renderCarrito();
+
+      document.getElementById("importeRecibido").value = "";
+
+      document.getElementById("cambio").innerText = "Cambio: ---";
+
+      document.getElementById("metodoPago").value = "EFECTIVO";
+
+      cambiarMetodoPago();
+
+      document.getElementById("buscador").value = "";
+
+    } else {
+
+      alert("Error: " + data.mensaje);
+
+    }
+
   } catch (error) {
-    alert("Error al guardar venta: " + error.message);
-	} finally {
-  	btnCobrar.disabled = false;
-  	btnCobrar.innerText = "Cobrar";
-}
-  
-}
 
+    alert("Error al guardar venta: " + error.message);
+
+  } finally {
+
+    btnCobrar.disabled = false;
+    btnCobrar.innerText = "Cobrar";
+
+  }
+
+}
 function beep() {
 
   const audio = new (window.AudioContext || window.webkitAudioContext)();
@@ -729,7 +785,7 @@ function beep() {
 
 }
 function esAdmin() {
-  return rolActual === "ADMIN";
+  return POS.rol === "ADMIN";
 }
 	function mostrarMensaje(texto, tipo = "ok") {
 
@@ -754,15 +810,14 @@ function esAdmin() {
 }
 function iniciarEscaner() {
 
-  if (escaneando) return;
-
+  if (POS.escaneando) return;
 
   document.getElementById("reader").style.display = "block";
 
-  escaner = new Html5Qrcode("reader");
-  escaneando = true;
+  POS.escaner = new Html5Qrcode("reader");
+  POS.escaneando = true;
 
-  escaner.start(
+  POS.escaner.start(
     { facingMode: "environment" },
     {
       fps: 10,
@@ -770,63 +825,58 @@ function iniciarEscaner() {
     },
     (codigoLeido) => {
 
-  const codigo = codigoLeido.trim();
+      const codigo = codigoLeido.trim();
 
-  const producto = productos.find(p =>
-    String(p.codigo).trim() === codigo
-  );
+      const producto = POS.productos.find(p =>
+        String(p.codigo).trim() === codigo
+      );
 
-if (!producto) {
+      if (!producto) {
 
-  if (esAdmin()) {
+        if (esAdmin()) {
+          mostrarMensaje(
+            "❌ Producto no encontrado: " + codigo + " | Puedes darlo de alta",
+            "error"
+          );
+        } else {
+          mostrarMensaje(
+            "❌ Producto no encontrado: " + codigo + " | Llame al administrador",
+            "error"
+          );
+        }
 
-    mostrarMensaje(
-      "❌ Producto no encontrado: " + codigo + " | Puedes darlo de alta",
-      "error"
-    );
+        return;
+      }
 
-  } else {
+      const ahora = Date.now();
 
-    mostrarMensaje(
-      "❌ Producto no encontrado: " + codigo + " | Llame al administrador",
-      "error"
-    );
+      if (
+        codigo === POS.ultimoCodigoEscaneado &&
+        ahora - POS.tiempoUltimoEscaneo < 3000
+      ) {
+        return;
+      }
 
-  }
+      POS.ultimoCodigoEscaneado = codigo;
+      POS.tiempoUltimoEscaneo = ahora;
 
-  return;
-}
+      agregarAlCarrito(producto.codigo, "ESCANER");
 
-  const ahora = Date.now();
+      beep();
 
-if (
-  codigo === ultimoCodigoEscaneado &&
-  ahora - tiempoUltimoEscaneo < 3000
-) {
-  return;
-}
-
-ultimoCodigoEscaneado = codigo;
-tiempoUltimoEscaneo = ahora;
-
-agregarAlCarrito(producto.codigo, "ESCANER");
-
-beep();
-
-
-
-},
+    },
     (error) => {
       // Ignorar errores de lectura
     }
-
   ).catch(err => {
 
     alert("Error cámara: " + err);
 
-    escaneando = false;
+    POS.escaneando = false;
+    POS.escaner = null;
 
     document.getElementById("reader").style.display = "none";
+
   });
 }
 function mostrarAdmin() {
@@ -847,18 +897,36 @@ function regresarVenta() {
 }
 function detenerEscaner() {
 
-  if (!escaner) {
+  if (!POS.escaner) {
+
     document.getElementById("reader").style.display = "none";
-    escaneando = false;
+
+    POS.escaneando = false;
+
     return;
+
   }
 
-  escaner.stop().then(() => {
-    escaner.clear();
-    escaner = null;
-    escaneando = false;
+  POS.escaner.stop().then(() => {
+
+    POS.escaner.clear();
+
+    POS.escaner = null;
+
+    POS.escaneando = false;
+
     document.getElementById("reader").style.display = "none";
+
+  }).catch(() => {
+
+    POS.escaner = null;
+
+    POS.escaneando = false;
+
+    document.getElementById("reader").style.display = "none";
+
   });
+
 }
 function mostrarCompras() {
   document.getElementById("pantallaAdmin").style.display = "none";
