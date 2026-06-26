@@ -728,20 +728,7 @@ async function cobrar() {
     if (data.ok) {
 
       alert("Venta guardada correctamente");
-
-      POS.carrito = [];
-
-      renderCarrito();
-
-      document.getElementById("importeRecibido").value = "";
-
-      document.getElementById("cambio").innerText = "Cambio: ---";
-
-      document.getElementById("metodoPago").value = "EFECTIVO";
-
-      cambiarMetodoPago();
-
-      document.getElementById("buscador").value = "";
+	limpiarOperacion();
 
     } else {
 
@@ -761,6 +748,24 @@ async function cobrar() {
   }
 
 }
+function limpiarOperacion() {
+
+  POS.carrito = [];
+
+  renderCarrito();
+
+  document.getElementById("importeRecibido").value = "";
+
+  document.getElementById("cambio").innerText = "Cambio: ---";
+
+  document.getElementById("metodoPago").value = "EFECTIVO";
+
+  cambiarMetodoPago();
+
+  document.getElementById("buscador").value = "";
+
+}
+	
 function beep() {
 
   const audio = new (window.AudioContext || window.webkitAudioContext)();
