@@ -133,7 +133,7 @@ button {
 
 <div id="pantallaVenta" style="display:none;">
   
-<div class="logo-pos">
+<div class="logo-pos" id="logoPOS">
   <img src="logo-emi.png" alt="Abarrotes EMI">
   <div class="usuario-pos" id="usuarioPantalla">Usuario</div>
 <div
@@ -1033,6 +1033,7 @@ function cambiarModoOperacion() {
   limpiarOperacion();
 
   const modo = document.getElementById("modoActual");
+	const logo = document.getElementById("logoPOS");
 
   let texto = "";
 
@@ -1042,6 +1043,7 @@ function cambiarModoOperacion() {
 
     modo.innerText = "🟢 VENTA";
     modo.style.color = "#16a34a";
+	logo.style.background = "#064e2f";
 
     texto = "🟢 Modo Venta activado";
 
@@ -1053,6 +1055,7 @@ function cambiarModoOperacion() {
 
     modo.innerText = "📦 COMPRA";
     modo.style.color = "#2563eb";
+	logo.style.background = "#2563eb";
 
     texto = "📦 Modo Compra activado";
 
@@ -1064,6 +1067,7 @@ function cambiarModoOperacion() {
 
     modo.innerText = "🤝 CONSIGNACIÓN";
     modo.style.color = "#ea580c";
+	logo.style.background = "#ea580c";
 
     texto = "🤝 Modo Consignación activado";
 
