@@ -792,6 +792,15 @@ async function cobrar() {
     alert("El carrito está vacío");
     return;
   }
+if (POS.modo === "COMPRA") {
+  alert("Modo compra detectado. Siguiente paso: guardar compra en Apps Script.");
+  return;
+}
+
+if (POS.modo === "CONSIGNACION") {
+  alert("Modo consignación detectado. Siguiente paso: guardar consignación en Apps Script.");
+  return;
+}
 
   const total = POS.carrito.reduce(
     (suma, item) => suma + (item.cantidad * item.precio),
