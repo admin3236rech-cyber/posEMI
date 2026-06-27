@@ -1032,15 +1032,18 @@ function cambiarModoOperacion() {
 
   limpiarOperacion();
 
+  const modo = document.getElementById("modoActual");
+
   let texto = "";
 
   if (POS.modo === "VENTA") {
 
     document.getElementById("btnCobrar").innerText = "Cobrar";
 
-    texto = "🟢 MODO VENTA ACTIVADO";
+    modo.innerText = "🟢 VENTA";
+    modo.style.color = "#16a34a";
 
-    document.getElementById("modoActual").innerText = "🟢 VENTA";
+    texto = "🟢 Modo Venta activado";
 
   }
 
@@ -1048,9 +1051,10 @@ function cambiarModoOperacion() {
 
     document.getElementById("btnCobrar").innerText = "Guardar compra";
 
-    texto = "📦 MODO COMPRA ACTIVADO";
+    modo.innerText = "📦 COMPRA";
+    modo.style.color = "#2563eb";
 
-    document.getElementById("modoActual").innerText = "📦 COMPRA";
+    texto = "📦 Modo Compra activado";
 
   }
 
@@ -1058,9 +1062,10 @@ function cambiarModoOperacion() {
 
     document.getElementById("btnCobrar").innerText = "Guardar consignación";
 
-    texto = "🤝 MODO CONSIGNACIÓN ACTIVADO";
+    modo.innerText = "🤝 CONSIGNACIÓN";
+    modo.style.color = "#ea580c";
 
-    document.getElementById("modoActual").innerText = "🤝 CONSIGNACIÓN";
+    texto = "🤝 Modo Consignación activado";
 
   }
 
