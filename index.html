@@ -431,6 +431,40 @@ function guardarSesion() {
   POS.configuracion.sesionActiva = true;
 
 }
+function cargarSesion() {
+
+  const sesionGuardada = localStorage.getItem("POS_SESION");
+
+  if (!sesionGuardada) return;
+
+  const sesion = JSON.parse(sesionGuardada);
+  const hoy = new Date().toISOString().slice(0, 10);
+
+  if (sesion.fecha !== hoy) {
+    localStorage.removeItem("POS_SESION");
+    return;
+  }
+
+  POS.usuario = sesion.usuario;
+  POS.rol = sesion.rol;
+  POS.configuracion.sesionActiva = true;
+
+  document.getElementById("pantallaLogin").style.display = "none";
+  document.getElementById("pantallaVenta").style.display = "block";
+
+  document.getElementById("estado").innerText = "Usuario: " + POS.usuario;
+
+  document.getElementById("usuarioPantalla").innerText =
+    POS.usuario + " · " + POS.rol;
+
+  if (POS.rol === "ADMIN") {
+    document.getElementById("btnAdmin").style.display = "block";
+  }
+
+  cargarProductos();
+  cambiarMetodoPago();
+
+}
 // ==================================================
 // PRODUCTOS
 // ==================================================
@@ -1026,6 +1060,8 @@ function esAdmin() {
 
 }
 	
+window.addEventListener("load", cargarSesion);	
+
 </script>
 
 </body>
