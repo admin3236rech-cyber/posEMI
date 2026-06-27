@@ -137,11 +137,19 @@ button {
   <img src="logo-emi.png" alt="Abarrotes EMI">
   <div class="usuario-pos" id="usuarioPantalla">Usuario</div>
 <div
-  id="modoActual"
-  class="usuario-pos"
-  style="font-size:18px;font-weight:bold;margin-top:8px;"
+    id="modoActual"
+    style="
+        margin-top:10px;
+        padding:10px;
+        border-radius:12px;
+        background:#16a34a;
+        color:white;
+        font-size:18px;
+        font-weight:bold;
+        text-align:center;
+    "
 >
-🟢 VENTA
+    🟢 VENTA
 </div>
 	
 </div>
@@ -1033,6 +1041,7 @@ function cambiarModoOperacion() {
   limpiarOperacion();
 
   const modo = document.getElementById("modoActual");
+	const modo = document.getElementById("modoActual");
 	const logo = document.getElementById("logoPOS");
 
   let texto = "";
@@ -1042,9 +1051,9 @@ function cambiarModoOperacion() {
     document.getElementById("btnCobrar").innerText = "Cobrar";
 
     modo.innerText = "🟢 VENTA";
-    modo.style.color = "#16a34a";
-	logo.style.background = "#064e2f";
-
+    modo.style.background = "#16a34a";
+	modo.style.color = "white";
+	
     texto = "🟢 Modo Venta activado";
 
   }
@@ -1054,8 +1063,8 @@ function cambiarModoOperacion() {
     document.getElementById("btnCobrar").innerText = "Guardar compra";
 
     modo.innerText = "📦 COMPRA";
-    modo.style.color = "#1d4ed8";
-	logo.style.background = "#2563eb";
+    modo.style.background = "#2563eb";
+	modo.style.color = "white";
 
     texto = "📦 Modo Compra activado";
 
@@ -1066,8 +1075,8 @@ function cambiarModoOperacion() {
     document.getElementById("btnCobrar").innerText = "Guardar consignación";
 
     modo.innerText = "🤝 CONSIGNACIÓN";
-    modo.style.color = "#c2410c";
-	logo.style.background = "#ea580c";
+    modo.style.background = "#ea580c";
+	modo.style.color = "white";
 
     texto = "🤝 Modo Consignación activado";
 
