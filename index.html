@@ -128,7 +128,19 @@ button {
   >
 
   <button class="btn-cargar" onclick="login()">Entrar</button>
+<div id="bloqueModo" style="display:none; margin-top:10px;">
+  <label style="font-size:14px; color:#fff3d1;">Modo de operación</label>
 
+  <select
+    id="modoOperacion"
+    onchange="cambiarModoOperacion()"
+    style="width:100%; padding:10px; border-radius:10px; font-size:16px; margin-top:6px;"
+  >
+    <option value="VENTA">🟢 Venta</option>
+    <option value="COMPRA">📦 Compra</option>
+    <option value="CONSIGNACION">🤝 Consignación</option>
+  </select>
+</div>
   <div id="msgLogin" style="text-align:center; font-weight:bold;"></div>
 </div>
 
@@ -137,6 +149,7 @@ button {
 <div class="logo-pos">
   <img src="logo-emi.png" alt="Abarrotes EMI">
   <div class="usuario-pos" id="usuarioPantalla">Usuario</div>
+	
 </div>
 
   <button class="btn-cargar" onclick="cargarProductos()">Cargar productos</button>
@@ -412,6 +425,7 @@ const POS = {
 
       if (POS.rol === "ADMIN") {
         document.getElementById("btnAdmin").style.display = "block";
+		document.getElementById("bloqueModo").style.display = "block";
       }
 
     } else {
@@ -465,6 +479,7 @@ function cargarSesion() {
 
   if (POS.rol === "ADMIN") {
     document.getElementById("btnAdmin").style.display = "block";
+	document.getElementById("bloqueModo").style.display = "block";
   }
 
   cargarProductos();
@@ -1059,6 +1074,26 @@ function mostrarCompras() {
 function regresarAdminDesdeCompras() {
   document.getElementById("pantallaCompras").style.display = "none";
   document.getElementById("pantallaAdmin").style.display = "block";
+}
+function cambiarModoOperacion() {
+
+  POS.modo = document.getElementById("modoOperacion").value;
+
+  POS.carrito = [];
+  renderCarrito();
+
+  if (POS.modo === "VENTA") {
+    document.getElementById("btnCobrar").innerText = "Cobrar";
+  }
+
+  if (POS.modo === "COMPRA") {
+    document.getElementById("btnCobrar").innerText = "Guardar compra";
+  }
+
+  if (POS.modo === "CONSIGNACION") {
+    document.getElementById("btnCobrar").innerText = "Guardar consignación";
+  }
+
 }
 
 // ==================================================
