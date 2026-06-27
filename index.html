@@ -473,6 +473,7 @@ function cargarSesion() {
 }
 
 function cerrarSesion() {
+if (!confirm("¿Deseas cerrar la sesión?")) return;
 
   localStorage.removeItem("POS_SESION");
 
