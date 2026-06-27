@@ -319,21 +319,60 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
 
 </div>
 <script>
+
+// ==================================================
+// CONFIGURACIÓN
+// ==================================================
+
+	
 const API_URL = "https://script.google.com/macros/s/AKfycbz2mzbagjmu6tQH-28eyPfFRdm5z1A33CepLmeXCRbB93VaJftw_jaDyMosSVz5Mbx6ZA/exec";
 
+
+// ==================================================
+// ESTADO GLOBAL POS
+// ==================================================
+
+	
 const POS = {
+
+  // Sistema
+  version: "1.0.0",
+
+  // Operación
   modo: "VENTA",
+
+  // Usuario
   usuario: "",
   rol: "",
+
+  // Catálogos
   productos: [],
+
+  // Venta actual
   carrito: [],
+
+  // Escáner
   escaner: null,
   escaneando: false,
   ultimoCodigoEscaneado: "",
-  tiempoUltimoEscaneo: 0
+  tiempoUltimoEscaneo: 0,
+
+  // Configuración
+  configuracion: {
+
+    sonido: true,
+    sesionActiva: false
+
+  }
+
 };
 
-async function login() {
+
+// ==================================================
+// LOGIN Y SESIÓN
+// ==================================================
+	
+	async function login() {
   const pin = document.getElementById("pin").value.trim();
   const msg = document.getElementById("msgLogin");
 
@@ -351,6 +390,8 @@ async function login() {
     if (data.ok) {
       POS.usuario = data.usuario;
       POS.rol = data.rol || "VENDEDOR";
+	guardarSesion();
+	
 
       document.getElementById("pantallaLogin").style.display = "none";
       document.getElementById("pantallaVenta").style.display = "block";
@@ -375,7 +416,26 @@ async function login() {
     msg.innerText = "Error de conexión: " + error.message;
   }
 }
+function guardarSesion() {
 
+  const hoy = new Date().toISOString().slice(0, 10);
+
+  localStorage.setItem("POS_SESION", JSON.stringify({
+
+    usuario: POS.usuario,
+    rol: POS.rol,
+    fecha: hoy
+
+  }));
+
+  POS.configuracion.sesionActiva = true;
+
+}
+// ==================================================
+// PRODUCTOS
+// ==================================================
+
+	
 async function cargarProductos() {
   const estado = document.getElementById("estado");
 
@@ -500,6 +560,12 @@ function mostrarProductos(listaMostrar) {
   }
 }
 
+
+
+// ==================================================
+// CARRITO
+// ==================================================
+	
 function agregarAlCarrito(codigo, origen = "BUSCADOR") {
 
   const producto = POS.productos.find(p => p.codigo === codigo);
@@ -599,6 +665,26 @@ function renderCarrito() {
   totalDiv.innerText = "TOTAL: $" + total.toFixed(2);
 calcularCambio();
 }
+function limpiarOperacion() {
+
+  POS.carrito = [];
+
+  renderCarrito();
+
+  document.getElementById("importeRecibido").value = "";
+
+  document.getElementById("cambio").innerText = "Cambio: ---";
+
+  document.getElementById("metodoPago").value = "EFECTIVO";
+
+  cambiarMetodoPago();
+
+  document.getElementById("buscador").value = "";
+
+}
+// ==================================================
+// PAGOS Y VENTAS
+// ==================================================
 function calcularCambio() {
 
   const textoRecibido =
@@ -750,24 +836,10 @@ async function cobrar() {
   }
 
 }
-function limpiarOperacion() {
 
-  POS.carrito = [];
-
-  renderCarrito();
-
-  document.getElementById("importeRecibido").value = "";
-
-  document.getElementById("cambio").innerText = "Cambio: ---";
-
-  document.getElementById("metodoPago").value = "EFECTIVO";
-
-  cambiarMetodoPago();
-
-  document.getElementById("buscador").value = "";
-
-}
-	
+// ==================================================
+// ESCÁNER
+// ==================================================	
 function beep() {
 
   const audio = new (window.AudioContext || window.webkitAudioContext)();
@@ -789,30 +861,6 @@ function beep() {
     osc.stop();
     audio.close();
   }, 70);
-
-}
-function esAdmin() {
-  return POS.rol === "ADMIN";
-}
-	function mostrarMensaje(texto, tipo = "ok") {
-
-  const div = document.getElementById("mensajePOS");
-
-  div.innerText = texto;
-
-  if (tipo === "ok") {
-    div.style.background = "#d1fae5";
-    div.style.color = "#065f46";
-  } else {
-    div.style.background = "#fee2e2";
-    div.style.color = "#991b1b";
-  }
-
-  div.style.display = "block";
-
-  setTimeout(() => {
-    div.style.display = "none";
-  }, 1500);
 
 }
 function iniciarEscaner() {
@@ -886,22 +934,6 @@ function iniciarEscaner() {
 
   });
 }
-function mostrarAdmin() {
-
-  document.getElementById("pantallaVenta")
-    .style.display = "none";
-
-  document.getElementById("pantallaAdmin")
-    .style.display = "block";
-}
-function regresarVenta() {
-
-  document.getElementById("pantallaAdmin")
-    .style.display = "none";
-
-  document.getElementById("pantallaVenta")
-    .style.display = "block";
-}
 function detenerEscaner() {
 
   if (!POS.escaner) {
@@ -911,10 +943,8 @@ function detenerEscaner() {
     POS.escaneando = false;
 
     return;
-
   }
-
-  POS.escaner.stop().then(() => {
+ POS.escaner.stop().then(() => {
 
     POS.escaner.clear();
 
@@ -935,6 +965,28 @@ function detenerEscaner() {
   });
 
 }
+// ==================================================
+// ADMINISTRACIÓN
+// ==================================================	
+function mostrarAdmin() {
+
+  document.getElementById("pantallaVenta")
+    .style.display = "none";
+
+  document.getElementById("pantallaAdmin")
+    .style.display = "block";
+}
+function regresarVenta() {
+
+  document.getElementById("pantallaAdmin")
+    .style.display = "none";
+
+  document.getElementById("pantallaVenta")
+    .style.display = "block";
+}
+
+
+ 
 function mostrarCompras() {
   document.getElementById("pantallaAdmin").style.display = "none";
   document.getElementById("pantallaCompras").style.display = "block";
@@ -944,6 +996,36 @@ function regresarAdminDesdeCompras() {
   document.getElementById("pantallaCompras").style.display = "none";
   document.getElementById("pantallaAdmin").style.display = "block";
 }
+
+// ==================================================
+// UTILIDADES
+// ==================================================
+	
+function esAdmin() {
+  return POS.rol === "ADMIN";
+}
+	function mostrarMensaje(texto, tipo = "ok") {
+
+  const div = document.getElementById("mensajePOS");
+
+  div.innerText = texto;
+
+  if (tipo === "ok") {
+    div.style.background = "#d1fae5";
+    div.style.color = "#065f46";
+  } else {
+    div.style.background = "#fee2e2";
+    div.style.color = "#991b1b";
+  }
+
+  div.style.display = "block";
+
+  setTimeout(() => {
+    div.style.display = "none";
+  }, 1500);
+
+}
+	
 </script>
 
 </body>
