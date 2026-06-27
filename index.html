@@ -782,25 +782,54 @@ async function cobrar() {
 
   if (btnCobrar.disabled) return;
 
-  btnCobrar.disabled = true;
-  btnCobrar.innerText = "Guardando...";
-
   if (POS.carrito.length === 0) {
-    btnCobrar.disabled = false;
-    btnCobrar.innerText = "Cobrar";
-
     alert("El carrito está vacío");
     return;
   }
-if (POS.modo === "COMPRA") {
-  alert("Modo compra detectado. Siguiente paso: guardar compra en Apps Script.");
-  return;
-}
 
-if (POS.modo === "CONSIGNACION") {
-  alert("Modo consignación detectado. Siguiente paso: guardar consignación en Apps Script.");
-  return;
+  btnCobrar.disabled = true;
+  btnCobrar.innerText = "Guardando...";
+
+  try {
+
+    if (POS.modo === "VENTA") {
+      await guardarVenta();
+    }
+
+    if (POS.modo === "COMPRA") {
+      alert("Modo compra detectado");
+    }
+
+    if (POS.modo === "CONSIGNACION") {
+      alert("Modo consignación detectado");
+    }
+
+  } catch (error) {
+
+    alert("Error: " + error.message);
+
+  } finally {
+
+    btnCobrar.disabled = false;
+
+    if (POS.modo === "VENTA") {
+      btnCobrar.innerText = "Cobrar";
+    }
+
+    if (POS.modo === "COMPRA") {
+      btnCobrar.innerText = "Guardar compra";
+    }
+
+    if (POS.modo === "CONSIGNACION") {
+      btnCobrar.innerText = "Guardar consignación";
+    }
+
+  }
+
 }
+async function guardarVenta() {
+
+  const btnCobrar = document.getElementById("btnCobrar");
 
   const total = POS.carrito.reduce(
     (suma, item) => suma + (item.cantidad * item.precio),
@@ -814,27 +843,16 @@ if (POS.modo === "CONSIGNACION") {
 
   const recibido = Number(textoRecibido || 0);
 
-  // Validación para efectivo
   if (metodoPago === "EFECTIVO") {
 
     if (textoRecibido === "") {
-
-      btnCobrar.disabled = false;
-      btnCobrar.innerText = "Cobrar";
-
       alert("Ingresa el importe recibido");
       return;
-
     }
 
     if (recibido < total) {
-
-      btnCobrar.disabled = false;
-      btnCobrar.innerText = "Cobrar";
-
       alert("El importe recibido es menor al total");
       return;
-
     }
 
   }
@@ -847,51 +865,28 @@ if (POS.modo === "CONSIGNACION") {
     items: POS.carrito
   };
 
+  const url =
+    API_URL +
+    "?action=guardarVenta&data=" +
+    encodeURIComponent(JSON.stringify(venta));
+
+  const respuesta = await fetch(url);
+  const texto = await respuesta.text();
+
+  let data;
+
   try {
+    data = JSON.parse(texto);
+  } catch (e) {
+    alert("Apps Script no respondió JSON.\nRevisa si la venta se guardó antes de cobrar nuevamente.");
+    return;
+  }
 
-    const url =
-      API_URL +
-      "?action=guardarVenta&data=" +
-      encodeURIComponent(JSON.stringify(venta));
-
-    const respuesta = await fetch(url);
-
-    const texto = await respuesta.text();
-
-    let data;
-
-    try {
-
-      data = JSON.parse(texto);
-
-    } catch (e) {
-
-      alert("Apps Script no respondió JSON.\nRevisa si la venta se guardó antes de cobrar nuevamente.");
-
-      return;
-
-    }
-
-    if (data.ok) {
-
-      alert("Venta guardada correctamente");
-	limpiarOperacion();
-
-    } else {
-
-      alert("Error: " + data.mensaje);
-
-    }
-
-  } catch (error) {
-
-    alert("Error al guardar venta: " + error.message);
-
-  } finally {
-
-    btnCobrar.disabled = false;
-    btnCobrar.innerText = "Cobrar";
-
+  if (data.ok) {
+    alert("Venta guardada correctamente");
+    limpiarOperacion();
+  } else {
+    alert("Error: " + data.mensaje);
   }
 
 }
