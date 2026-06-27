@@ -264,7 +264,13 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   <button class="btn-cargar">
     👤 Usuarios
   </button>
-
+<button
+  class="btn-cargar"
+  style="background:#b91c1c;"
+  onclick="cerrarSesion()"
+>
+  🚪 Cerrar sesión
+</button>
   <button
     class="btn-eliminar"
     style="width:100%;"
@@ -463,6 +469,29 @@ function cargarSesion() {
 
   cargarProductos();
   cambiarMetodoPago();
+
+}
+
+function cerrarSesion() {
+
+  localStorage.removeItem("POS_SESION");
+
+  POS.configuracion.sesionActiva = false;
+
+  POS.usuario = "";
+  POS.rol = "";
+
+  document.getElementById("pin").value = "";
+  document.getElementById("msgLogin").innerText = "";
+
+  document.getElementById("pantallaCompras").style.display = "none";
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaVenta").style.display = "none";
+  document.getElementById("pantallaLogin").style.display = "block";
+
+  document.getElementById("btnAdmin").style.display = "none";
+
+  limpiarOperacion();
 
 }
 // ==================================================
