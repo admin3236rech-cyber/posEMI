@@ -128,19 +128,6 @@ button {
   >
 
   <button class="btn-cargar" onclick="login()">Entrar</button>
-<div id="bloqueModo" style="display:none; margin-top:10px;">
-  <label style="font-size:14px; color:#fff3d1;">Modo de operación</label>
-
-  <select
-    id="modoOperacion"
-    onchange="cambiarModoOperacion()"
-    style="width:100%; padding:10px; border-radius:10px; font-size:16px; margin-top:6px;"
-  >
-    <option value="VENTA">🟢 Venta</option>
-    <option value="COMPRA">📦 Compra</option>
-    <option value="CONSIGNACION">🤝 Consignación</option>
-  </select>
-</div>
   <div id="msgLogin" style="text-align:center; font-weight:bold;"></div>
 </div>
 
@@ -258,6 +245,22 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
 <div id="pantallaAdmin" style="display:none;">
 
   <h1>Administración</h1>
+
+<div id="bloqueModo" style="display:none; margin-bottom:14px;">
+  <label style="font-size:15px; font-weight:bold;">
+    Modo de operación
+  </label>
+
+  <select
+    id="modoOperacion"
+    onchange="cambiarModoOperacion()"
+    style="width:100%; padding:14px; border-radius:10px; font-size:18px; margin-top:6px;"
+  >
+    <option value="VENTA">🟢 Venta</option>
+    <option value="COMPRA">📦 Compra</option>
+    <option value="CONSIGNACION">🤝 Consignación</option>
+  </select>
+</div>
 
   <button class="btn-cargar">
     📦 Productos
@@ -506,6 +509,7 @@ if (!confirm("¿Deseas cerrar la sesión?")) return;
   document.getElementById("pantallaLogin").style.display = "block";
 
   document.getElementById("btnAdmin").style.display = "none";
+	document.getElementById("bloqueModo").style.display = "none";
 
   limpiarOperacion();
 
