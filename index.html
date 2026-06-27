@@ -136,6 +136,13 @@ button {
 <div class="logo-pos">
   <img src="logo-emi.png" alt="Abarrotes EMI">
   <div class="usuario-pos" id="usuarioPantalla">Usuario</div>
+<div
+  id="modoActual"
+  class="usuario-pos"
+  style="font-size:18px;font-weight:bold;margin-top:8px;"
+>
+🟢 VENTA
+</div>
 	
 </div>
 
@@ -1023,20 +1030,43 @@ function cambiarModoOperacion() {
 
   POS.modo = document.getElementById("modoOperacion").value;
 
-  POS.carrito = [];
-  renderCarrito();
+  limpiarOperacion();
+
+  let texto = "";
 
   if (POS.modo === "VENTA") {
+
     document.getElementById("btnCobrar").innerText = "Cobrar";
+
+    texto = "🟢 MODO VENTA ACTIVADO";
+
+    document.getElementById("modoActual").innerText = "🟢 VENTA";
+
   }
 
   if (POS.modo === "COMPRA") {
+
     document.getElementById("btnCobrar").innerText = "Guardar compra";
+
+    texto = "📦 MODO COMPRA ACTIVADO";
+
+    document.getElementById("modoActual").innerText = "📦 COMPRA";
+
   }
 
   if (POS.modo === "CONSIGNACION") {
+
     document.getElementById("btnCobrar").innerText = "Guardar consignación";
+
+    texto = "🤝 MODO CONSIGNACIÓN ACTIVADO";
+
+    document.getElementById("modoActual").innerText = "🤝 CONSIGNACIÓN";
+
   }
+
+  mostrarMensaje(texto);
+
+  regresarVenta();
 
 }
 
@@ -1065,7 +1095,7 @@ function esAdmin() {
 
   setTimeout(() => {
     div.style.display = "none";
-  }, 1500);
+  }, 5000);
 
 }
 	
