@@ -265,9 +265,6 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   <button class="btn-cargar">
     📦 Productos
   </button>
-	<button class="btn-cargar" onclick="mostrarCompras()">
-  🚚 Compras
-</button>
 
   <button class="btn-cargar">
     📋 Inventario
@@ -292,50 +289,6 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
     style="width:100%;"
     onclick="regresarVenta()"
   >
-    ⬅️ Regresar
-  </button>
-
-</div>
-<div id="pantallaCompras" style="display:none;">
-
-  <h1>Compras</h1>
-
-  <input
-    id="proveedorCompra"
-    type="text"
-    placeholder="Proveedor"
-    style="width:100%; padding:14px; font-size:18px; border-radius:10px; border:1px solid #ccc; margin-bottom:12px;"
-  >
-
-  <select
-    id="tipoCompra"
-    style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bottom:12px;"
-  >
-    <option value="COMPRA">Compra</option>
-    <option value="CONSIGNACION">Consignación</option>
-  </select>
-
-  <input
-    id="buscadorCompra"
-    type="text"
-    placeholder="Buscar producto o código..."
-    style="width:100%; padding:14px; font-size:18px; border-radius:10px; border:1px solid #ccc; margin-bottom:12px;"
-  >
-
-  <button class="btn-cargar">
-    📷 Escanear producto
-  </button>
-
-  <h2>Detalle compra</h2>
-  <div id="detalleCompra"></div>
-
-  <div id="totalCompra">TOTAL COMPRA: $0.00</div>
-
-  <button class="btn-cobrar">
-    Guardar compra
-  </button>
-
-  <button class="btn-eliminar" style="width:100%;" onclick="regresarAdminDesdeCompras()">
     ⬅️ Regresar
   </button>
 
@@ -503,7 +456,6 @@ if (!confirm("¿Deseas cerrar la sesión?")) return;
   document.getElementById("pin").value = "";
   document.getElementById("msgLogin").innerText = "";
 
-  document.getElementById("pantallaCompras").style.display = "none";
   document.getElementById("pantallaAdmin").style.display = "none";
   document.getElementById("pantallaVenta").style.display = "none";
   document.getElementById("pantallaLogin").style.display = "block";
@@ -1066,18 +1018,6 @@ function regresarVenta() {
 
   document.getElementById("pantallaVenta")
     .style.display = "block";
-}
-
-
- 
-function mostrarCompras() {
-  document.getElementById("pantallaAdmin").style.display = "none";
-  document.getElementById("pantallaCompras").style.display = "block";
-}
-
-function regresarAdminDesdeCompras() {
-  document.getElementById("pantallaCompras").style.display = "none";
-  document.getElementById("pantallaAdmin").style.display = "block";
 }
 function cambiarModoOperacion() {
 
