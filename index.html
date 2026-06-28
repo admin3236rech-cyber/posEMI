@@ -216,11 +216,11 @@ button {
   "
 ></div>
 
-  <h2>Carrito</h2>
+ <h2 id="tituloCarrito">Carrito</h2>
   <div id="carrito"></div>
 
   <div id="total">TOTAL: $0.00</div>
-
+<div id="bloquePago">
 <h2>Método de pago</h2>
 
 <select id="metodoPago"
@@ -245,6 +245,7 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   <div id="cambio" style="margin-top:10px; font-size:24px; font-weight:bold; color:#0b8043;">
     Cambio: ---
   </div>
+</div>
 </div>
 	
  <button id="btnCobrar" class="btn-cobrar" onclick="cobrar()">Cobrar</button>
@@ -1045,51 +1046,47 @@ function cambiarModoOperacion() {
   limpiarOperacion();
 
   const modo = document.getElementById("modoActual");
-
   let texto = "";
 
   if (POS.modo === "VENTA") {
-
     document.getElementById("btnCobrar").innerText = "Cobrar";
+    document.getElementById("tituloCarrito").innerText = "Carrito de venta";
+    document.getElementById("bloquePago").style.display = "block";
 
     modo.innerText = "🟢 VENTA";
     modo.style.background = "#16a34a";
-	modo.style.color = "white";
-	
-    texto = "🟢 Modo Venta activado";
+    modo.style.color = "white";
 
+    texto = "🟢 Modo Venta activado";
   }
 
   if (POS.modo === "COMPRA") {
-
     document.getElementById("btnCobrar").innerText = "Guardar compra";
+    document.getElementById("tituloCarrito").innerText = "Detalle de compra";
+    document.getElementById("bloquePago").style.display = "none";
 
     modo.innerText = "📦 COMPRA";
     modo.style.background = "#2563eb";
-	modo.style.color = "white";
+    modo.style.color = "white";
 
     texto = "📦 Modo Compra activado";
-
   }
 
   if (POS.modo === "CONSIGNACION") {
-
     document.getElementById("btnCobrar").innerText = "Guardar consignación";
+    document.getElementById("tituloCarrito").innerText = "Productos en consignación";
+    document.getElementById("bloquePago").style.display = "none";
 
     modo.innerText = "🤝 CONSIGNACIÓN";
     modo.style.background = "#ea580c";
-	modo.style.color = "white";
+    modo.style.color = "white";
 
     texto = "🤝 Modo Consignación activado";
-
   }
 
   mostrarMensaje(texto);
-
   regresarVenta();
-
 }
-
 // ==================================================
 // UTILIDADES
 // ==================================================
