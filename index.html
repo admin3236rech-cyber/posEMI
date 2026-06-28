@@ -220,6 +220,26 @@ button {
   <div id="carrito"></div>
 
   <div id="total">TOTAL: $0.00</div>
+
+<div id="bloqueCompra" style="display:none;">
+
+  <h2>Proveedor</h2>
+
+  <input
+    id="proveedorCompra"
+    type="text"
+    placeholder="Nombre del proveedor..."
+    style="
+      width:100%;
+      padding:14px;
+      font-size:18px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      margin-bottom:12px;
+    "
+  >
+
+</div>
 <div id="bloquePago">
 <h2>Método de pago</h2>
 
@@ -1052,6 +1072,7 @@ function cambiarModoOperacion() {
     document.getElementById("btnCobrar").innerText = "Cobrar";
     document.getElementById("tituloCarrito").innerText = "Carrito de venta";
     document.getElementById("bloquePago").style.display = "block";
+	  document.getElementById("bloqueCompra").style.display = "none";
 
     modo.innerText = "🟢 VENTA";
     modo.style.background = "#16a34a";
@@ -1064,6 +1085,7 @@ function cambiarModoOperacion() {
     document.getElementById("btnCobrar").innerText = "Guardar compra";
     document.getElementById("tituloCarrito").innerText = "Detalle de compra";
     document.getElementById("bloquePago").style.display = "none";
+	  document.getElementById("bloqueCompra").style.display = "block";
 
     modo.innerText = "📦 COMPRA";
     modo.style.background = "#2563eb";
@@ -1076,6 +1098,7 @@ function cambiarModoOperacion() {
     document.getElementById("btnCobrar").innerText = "Guardar consignación";
     document.getElementById("tituloCarrito").innerText = "Productos en consignación";
     document.getElementById("bloquePago").style.display = "none";
+	  document.getElementById("bloqueCompra").style.display = "none";
 
     modo.innerText = "🤝 CONSIGNACIÓN";
     modo.style.background = "#ea580c";
