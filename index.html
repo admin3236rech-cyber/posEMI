@@ -882,7 +882,17 @@ ${texto}
       <div class="item-linea">
         <div>
           <div class="item-nombre">${item.producto}</div>
-          <div class="item-info">x${item.cantidad} · $${item.precio.toFixed(2)}</div>
+          <div class="item-info">
+
+${
+  POS.modo === "VENTA"
+    ? `x${item.cantidad} · $${item.precio.toFixed(2)}`
+    : POS.modo === "COMPRA"
+      ? `${item.cantidad} ${item.unidad || "pzas"}`
+      : `x${item.cantidad}`
+}
+
+</div>
         </div>
 
         <div class="item-importe">$${importe.toFixed(2)}</div>
