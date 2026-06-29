@@ -785,21 +785,102 @@ function renderCarrito() {
 
   POS.carrito.forEach(item => {
 
+    let costo = Number(item.costo || 0);
+    let precio = Number(item.precio || 0);
+    let cantidad = Number(item.cantidad || 0);
+
     let importe = 0;
 
     if (POS.modo === "VENTA") {
-      importe = item.cantidad * item.precio;
+      importe = cantidad * precio;
     }
 
     if (POS.modo === "COMPRA") {
-      importe = item.cantidad * (item.costo || 0);
+      importe = cantidad * costo;
     }
 
     if (POS.modo === "CONSIGNACION") {
-      importe = item.cantidad * item.precio;
+      importe = cantidad * precio;
     }
 
     total += importe;
+
+    let camposCompra = "";
+
+    if (POS.modo === "COMPRA") {
+
+      let utilidad = precio - costo;
+      let margen = precio > 0 ? (utilidad / precio) * 100 : 0;
+
+      let color = "#d1fae5";
+      let texto = "🟢 Margen saludable";
+
+      if (costo <= 0) {
+        color = "#fee2e2";
+        texto = "🔴 Falta capturar el costo";
+      } else if (precio <= costo) {
+        color = "#fee2e2";
+        texto = "🔴 El precio de venta no deja utilidad";
+      } else if (margen < 15) {
+        color = "#fef3c7";
+        texto = "🟡 Margen bajo, revisar precio";
+      }
+
+      camposCompra = `
+        <div style="margin-top:10px;">
+
+          <label>Cantidad comprada</label>
+          <input
+            type="number"
+            value="${cantidad}"
+            onchange="actualizarCantidadCompra('${item.codigo}', this.value)"
+            style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+          >
+
+          <label>Costo unitario</label>
+          <input
+            type="number"
+            value="${costo}"
+            onchange="actualizarCostoCompra('${item.codigo}', this.value)"
+            style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+          >
+
+          <label>Precio venta</label>
+          <input
+            type="number"
+            value="${precio}"
+            onchange="actualizarPrecioCompra('${item.codigo}', this.value)"
+            style="width:100%; padding:10px; font-size:16px; margin-bottom:10px;"
+          >
+
+        </div>
+
+        <div
+          id="utilidad-${item.codigo}"
+          style="
+            margin-top:10px;
+            padding:12px;
+            background:${color};
+            border-radius:10px;
+            font-size:15px;
+            color:#065f46;
+            font-weight:bold;
+            line-height:1.6;
+          "
+        >
+
+          ${texto}
+
+          <hr style="margin:8px 0; border:none; border-top:1px solid rgba(0,0,0,.15);">
+
+          💵 <b>Costo:</b> $${costo.toFixed(2)}<br>
+          🏷️ <b>Venta:</b> $${precio.toFixed(2)}<br>
+          💰 <b>Ganancia:</b> $${utilidad.toFixed(2)}<br>
+          📈 <b>Margen:</b> ${margen.toFixed(2)}%
+
+        </div>
+      `;
+    }
 
     const div = document.createElement("div");
     div.className = "item-carrito";
@@ -811,16 +892,18 @@ function renderCarrito() {
           <div class="item-info">
             ${
               POS.modo === "VENTA"
-                ? `x${item.cantidad} · $${item.precio.toFixed(2)}`
+                ? `x${cantidad} · $${precio.toFixed(2)}`
                 : POS.modo === "COMPRA"
-                  ? `${item.cantidad} ${item.unidad || "pzas"}`
-                  : `x${item.cantidad}`
+                  ? `${cantidad} pzas · Costo $${costo.toFixed(2)}`
+                  : `x${cantidad}`
             }
           </div>
         </div>
 
         <div class="item-importe">$${importe.toFixed(2)}</div>
       </div>
+
+      ${camposCompra}
 
       <div class="item-botones">
         <button onclick="agregarAlCarrito('${item.codigo}','BOTON_MAS')">+</button>
@@ -838,6 +921,7 @@ function renderCarrito() {
   if (POS.modo === "CONSIGNACION") textoTotal = "TOTAL CONSIGNACIÓN";
 
   totalDiv.innerText = textoTotal + ": $" + total.toFixed(2);
+
   calcularCambio();
 }
 function actualizarCantidadCompra(codigo, valor) {
