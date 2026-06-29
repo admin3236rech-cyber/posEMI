@@ -754,32 +754,92 @@ function renderCarrito() {
   let total = 0;
 
   POS.carrito.forEach(item => {
+
     const importe = item.cantidad * item.precio;
     total += importe;
 
     const div = document.createElement("div");
     div.className = "item-carrito";
 
-   div.innerHTML = `
-  <div class="item-linea">
-    <div>
-      <div class="item-nombre">${item.producto}</div>
-      <div class="item-info">x${item.cantidad} · $${item.precio.toFixed(2)}</div>
-    </div>
+    let camposCompra = "";
 
-    <div class="item-importe">$${importe.toFixed(2)}</div>
-  </div>
+    if (POS.modo === "COMPRA") {
+      camposCompra = `
+        <div style="margin-top:10px;">
 
-  <div class="item-botones">
-    <button onclick="agregarAlCarrito('${item.codigo}','BOTON_MAS')">+</button>
-    <button class="btn-eliminar" onclick="quitarDelCarrito('${item.codigo}')">-</button>
-  </div>
-`;
+          <label>Cantidad comprada</label>
+          <input
+            type="number"
+            value="${item.cantidad}"
+            onchange="actualizarCantidadCompra('${item.codigo}', this.value)"
+            style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+          >
+
+          <label>Costo unitario</label>
+          <input
+            type="number"
+            value="${item.costo || 0}"
+            onchange="actualizarCostoCompra('${item.codigo}', this.value)"
+            style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+          >
+
+          <label>Precio venta</label>
+          <input
+            type="number"
+            value="${item.precio || 0}"
+            onchange="actualizarPrecioCompra('${item.codigo}', this.value)"
+            style="width:100%; padding:10px; font-size:16px;"
+          >
+
+        </div>
+      `;
+    }
+
+    div.innerHTML = `
+      <div class="item-linea">
+        <div>
+          <div class="item-nombre">${item.producto}</div>
+          <div class="item-info">x${item.cantidad} · $${item.precio.toFixed(2)}</div>
+        </div>
+
+        <div class="item-importe">$${importe.toFixed(2)}</div>
+      </div>
+
+      ${camposCompra}
+
+      <div class="item-botones">
+        <button onclick="agregarAlCarrito('${item.codigo}','BOTON_MAS')">+</button>
+        <button class="btn-eliminar" onclick="quitarDelCarrito('${item.codigo}')">-</button>
+      </div>
+    `;
 
     contenedor.appendChild(div);
   });
+
   totalDiv.innerText = "TOTAL: $" + total.toFixed(2);
-calcularCambio();
+  calcularCambio();
+}
+function actualizarCantidadCompra(codigo, valor) {
+  const item = POS.carrito.find(i => i.codigo === codigo);
+  if (!item) return;
+
+  item.cantidad = Number(valor || 0);
+  renderCarrito();
+}
+
+function actualizarCostoCompra(codigo, valor) {
+  const item = POS.carrito.find(i => i.codigo === codigo);
+  if (!item) return;
+
+  item.costo = Number(valor || 0);
+}
+
+function actualizarPrecioCompra(codigo, valor) {
+  const item = POS.carrito.find(i => i.codigo === codigo);
+  if (!item) return;
+
+  item.precio = Number(valor || 0);
+  renderCarrito();
 }
 function limpiarOperacion() {
 
