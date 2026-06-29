@@ -939,9 +939,9 @@ async function cobrar() {
       await guardarVenta();
     }
 
-    if (POS.modo === "COMPRA") {
-      alert("Modo compra detectado");
-    }
+   if (POS.modo === "COMPRA") {
+  await guardarCompra();
+}
 
     if (POS.modo === "CONSIGNACION") {
       alert("Modo consignación detectado");
@@ -1033,7 +1033,22 @@ async function guardarVenta() {
   }
 
 }
+async function guardarCompra() {
 
+  const compra = {
+    folio: "C-" + new Date().getTime(),
+    usuario: POS.usuario,
+    proveedor: "",
+    factura: "",
+    observacion: "",
+    items: POS.carrito
+  };
+
+  console.log("COMPRA A GUARDAR:", compra);
+
+  alert("Compra preparada correctamente. Siguiente paso: enviarla a Apps Script.");
+
+}
 // ==================================================
 // ESCÁNER
 // ==================================================	
