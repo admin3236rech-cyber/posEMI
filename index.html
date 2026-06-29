@@ -1289,26 +1289,42 @@ function iniciarEscaner() {
 
       const codigo = codigoLeido.trim();
 
-      const producto = POS.productos.find(p =>
-        String(p.codigo).trim() === codigo
-      );
+     const producto = POS.productos.find(p =>
+  String(p.codigo).trim() === codigo
+);
 
-      if (!producto) {
+if (!producto) {
 
-        if (esAdmin()) {
-          mostrarMensaje(
-            "❌ Producto no encontrado: " + codigo + " | Puedes darlo de alta",
-            "error"
-          );
-        } else {
-          mostrarMensaje(
-            "❌ Producto no encontrado: " + codigo + " | Llame al administrador",
-            "error"
-          );
-        }
+  if (POS.modo === "COMPRA") {
 
-        return;
-      }
+    mostrarAltaRapidaCompra(codigo);
+
+    mostrarMensaje(
+      "📦 Producto nuevo. Captura sus datos.",
+      "error"
+    );
+
+    return;
+  }
+
+  if (esAdmin()) {
+
+    mostrarMensaje(
+      "❌ Producto no encontrado: " + codigo + " | Puedes darlo de alta",
+      "error"
+    );
+
+  } else {
+
+    mostrarMensaje(
+      "❌ Producto no encontrado: " + codigo + " | Llame al administrador",
+      "error"
+    );
+
+  }
+
+  return;
+}
 
       const ahora = Date.now();
 
