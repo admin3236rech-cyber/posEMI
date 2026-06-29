@@ -746,13 +746,19 @@ function agregarAlCarrito(codigo, origen = "BUSCADOR") {
     renderCarrito();
     return;
   }
-
  POS.carrito.unshift({
-    codigo: producto.codigo,
-    producto: producto.producto,
-    precio: producto.precio,
-    costo: producto.costo || 0,
-    cantidad: 1
+
+  codigo: producto.codigo,
+  producto: producto.producto,
+  precio: producto.precio,
+  costo: producto.costo || 0,
+
+  cantidad: 1,
+
+  unidad: producto.unidad || "PZ",
+
+  consignacion: producto.consignacion || "PROPIO"
+
 });
 
   mostrarMensaje(
