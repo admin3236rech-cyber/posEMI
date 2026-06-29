@@ -772,7 +772,19 @@ function renderCarrito() {
 
   POS.carrito.forEach(item => {
 
-    const importe = item.cantidad * item.precio;
+   let importe = 0;
+
+if (POS.modo === "VENTA") {
+  importe = item.cantidad * item.precio;
+}
+
+if (POS.modo === "COMPRA") {
+  importe = item.cantidad * (item.costo || 0);
+}
+
+if (POS.modo === "CONSIGNACION") {
+  importe = item.cantidad * item.precio;
+}
     total += importe;
 
     const div = document.createElement("div");
@@ -833,7 +845,21 @@ function renderCarrito() {
     contenedor.appendChild(div);
   });
 
-  totalDiv.innerText = "TOTAL: $" + total.toFixed(2);
+  let textoTotal = "TOTAL";
+
+if (POS.modo === "COMPRA") {
+  textoTotal = "TOTAL COMPRA";
+}
+
+if (POS.modo === "VENTA") {
+  textoTotal = "TOTAL VENTA";
+}
+
+if (POS.modo === "CONSIGNACION") {
+  textoTotal = "TOTAL CONSIGNACIÓN";
+}
+
+totalDiv.innerText = textoTotal + ": $" + total.toFixed(2);
   calcularCambio();
 }
 function actualizarCantidadCompra(codigo, valor) {
