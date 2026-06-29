@@ -735,12 +735,13 @@ function agregarAlCarrito(codigo, origen = "BUSCADOR") {
     return;
   }
 
-  POS.carrito.unshift({
+ POS.carrito.unshift({
     codigo: producto.codigo,
     producto: producto.producto,
     precio: producto.precio,
+    costo: producto.costo || 0,
     cantidad: 1
-  });
+});
 
   mostrarMensaje(
     "✅ " + producto.producto + " agregado"
