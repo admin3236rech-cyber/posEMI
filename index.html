@@ -867,7 +867,7 @@ function renderCarrito() {
       camposCompra = `
         <div style="margin-top:10px;">
 
-          <label>Cantidad comprada</label>
+          <label>Cantidad comprada (${item.unidad || "PZ"})</label>
           <input
             type="number"
             value="${cantidad}"
@@ -932,7 +932,7 @@ function renderCarrito() {
               POS.modo === "VENTA"
                 ? `x${cantidad} · $${precio.toFixed(2)}`
                 : POS.modo === "COMPRA"
-                  ? `${cantidad} pzas · Costo $${costo.toFixed(2)}`
+                  ? `${cantidad} ${item.unidad || "PZ"} · Costo $${costo.toFixed(2)}`
                   : `x${cantidad}`
             }
           </div>
