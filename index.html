@@ -791,9 +791,34 @@ if (POS.modo === "CONSIGNACION") {
     const div = document.createElement("div");
     div.className = "item-carrito";
 
-    let camposCompra = "";
+    const costo = item.costo || 0;
+const precio = item.precio || 0;
+
+const utilidad = precio - costo;
+
+const margen = costo > 0
+  ? ((utilidad / costo) * 100)
+  : 0;
+	  let camposCompra = "";
 
     if (POS.modo === "COMPRA") {
+	let color = "#d1fae5";
+let texto = "🟢 Excelente margen";
+
+if (margen < 30) {
+  color = "#fef3c7";
+  texto = "🟡 Utilidad baja";
+}
+
+if (margen < 10) {
+  color = "#fee2e2";
+  texto = "🔴 Revisar precio";
+}
+
+if (utilidad < 0) {
+  color = "#fecaca";
+  texto = "⛔ Vendes con pérdida";
+}
       camposCompra = `
         <div style="margin-top:10px;">
 
@@ -827,22 +852,29 @@ if (POS.modo === "CONSIGNACION") {
   style="
     margin-top:10px;
     padding:10px;
-    background:#eefbf3;
+    background:${color};
     border-radius:8px;
     font-size:15px;
     color:#065f46;
     font-weight:bold;
   "
->
-  Utilidad: $${((item.precio || 0) - (item.costo || 0)).toFixed(2)}
-  <br>
-  Margen: ${
-    item.costo > 0
-      ? ((((item.precio - item.costo) / item.costo) * 100).toFixed(2))
-      : "0.00"
-  }%
-</div>
-      `;
+${texto}
+
+<br><br>
+
+💵 Costo: $${costo.toFixed(2)}
+
+<br>
+
+🏷️ Venta: $${precio.toFixed(2)}
+
+<br>
+
+💰 Utilidad: $${utilidad.toFixed(2)}
+
+<br>
+
+📈 Margen: ${margen.toFixed(2)}%      `;
     }
 
     div.innerHTML = `
