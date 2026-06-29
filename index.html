@@ -876,6 +876,8 @@ function actualizarCostoCompra(codigo, valor) {
   if (!item) return;
 
   item.costo = Number(valor || 0);
+
+  renderCarrito();
 }
 
 function actualizarPrecioCompra(codigo, valor) {
