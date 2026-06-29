@@ -444,7 +444,6 @@ const POS = {
 // ==================================================
 // LOGIN Y SESIÓN
 // ==================================================
-	
 	async function login() {
   const pin = document.getElementById("pin").value.trim();
   const msg = document.getElementById("msgLogin");
@@ -457,14 +456,26 @@ const POS = {
   msg.innerText = "Validando...";
 
   try {
-    const respuesta = await fetch(API_URL + "?action=login&pin=" + encodeURIComponent(pin));
-    const data = await respuesta.json();
+    const url = API_URL + "?action=login&pin=" + encodeURIComponent(pin);
+    const respuesta = await fetch(url);
+    const texto = await respuesta.text();
+
+    console.log("RESPUESTA LOGIN:", texto);
+
+    let data;
+
+    try {
+      data = JSON.parse(texto);
+    } catch (e) {
+      msg.innerText = "La API no respondió JSON. Revisa permisos o publicación.";
+      return;
+    }
 
     if (data.ok) {
       POS.usuario = data.usuario;
       POS.rol = data.rol || "VENDEDOR";
-	guardarSesion();
-	
+
+      guardarSesion();
 
       document.getElementById("pantallaLogin").style.display = "none";
       document.getElementById("pantallaVenta").style.display = "block";
@@ -479,18 +490,19 @@ const POS = {
 
       if (POS.rol === "ADMIN") {
         document.getElementById("btnAdmin").style.display = "block";
-		document.getElementById("bloqueModo").style.display = "block";
+        document.getElementById("bloqueModo").style.display = "block";
       }
 
     } else {
-      msg.innerText = "PIN incorrecto";
+      msg.innerText = data.mensaje || "PIN incorrecto";
     }
 
   } catch (error) {
     msg.innerText = "Error de conexión: " + error.message;
   }
 }
-function guardarSesion() {
+	
+	function guardarSesion() {
 
   const hoy = new Date().toISOString().slice(0, 10);
 
