@@ -343,9 +343,9 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   </select>
 </div>
 
-  <button class="btn-cargar">
-    📦 Productos
-  </button>
+<button class="btn-cargar" onclick="mostrarProductosAdmin()">
+  📦 Productos
+</button>
 
   <button class="btn-cargar">
     📋 Inventario
@@ -374,6 +374,23 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   </button>
 
 </div>
+<div id="pantallaProductos" style="display:none;">
+
+  <h1>Productos</h1>
+
+  <button class="btn-cargar">
+    ➕ Nuevo producto
+  </button>
+
+  <button class="btn-cargar">
+    🔍 Buscar producto
+  </button>
+
+  <button class="btn-eliminar" style="width:100%;" onclick="regresarAdminDesdeProductos()">
+    ⬅️ Regresar
+  </button>
+
+</div>	
 <script>
 
 // ==================================================
@@ -1214,6 +1231,15 @@ function cambiarModoOperacion() {
 
   mostrarMensaje(texto);
   regresarVenta();
+}
+function mostrarProductosAdmin() {
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaProductos").style.display = "block";
+}
+
+function regresarAdminDesdeProductos() {
+  document.getElementById("pantallaProductos").style.display = "none";
+  document.getElementById("pantallaAdmin").style.display = "block";
 }
 // ==================================================
 // UTILIDADES
