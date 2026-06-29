@@ -822,6 +822,26 @@ if (POS.modo === "CONSIGNACION") {
           >
 
         </div>
+		<div
+  id="utilidad-${item.codigo}"
+  style="
+    margin-top:10px;
+    padding:10px;
+    background:#eefbf3;
+    border-radius:8px;
+    font-size:15px;
+    color:#065f46;
+    font-weight:bold;
+  "
+>
+  Utilidad: $${((item.precio || 0) - (item.costo || 0)).toFixed(2)}
+  <br>
+  Margen: ${
+    item.costo > 0
+      ? ((((item.precio - item.costo) / item.costo) * 100).toFixed(2))
+      : "0.00"
+  }%
+</div>
       `;
     }
 
