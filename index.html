@@ -819,65 +819,65 @@ if (utilidad < 0) {
   color = "#fecaca";
   texto = "⛔ Vendes con pérdida";
 }
-      camposCompra = `
-        <div style="margin-top:10px;">
+   camposCompra = `
 
-          <label>Cantidad comprada</label>
-          <input
-            type="number"
-            value="${item.cantidad}"
-            onchange="actualizarCantidadCompra('${item.codigo}', this.value)"
-            style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
-          >
+<div style="margin-top:10px;">
 
-          <label>Costo unitario</label>
-          <input
-            type="number"
-            value="${item.costo || 0}"
-            onchange="actualizarCostoCompra('${item.codigo}', this.value)"
-            style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
-          >
+  <label>Cantidad comprada</label>
+  <input
+    type="number"
+    value="${item.cantidad}"
+    onchange="actualizarCantidadCompra('${item.codigo}', this.value)"
+    style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+  >
 
-          <label>Precio venta</label>
-          <input
-            type="number"
-            value="${item.precio || 0}"
-            onchange="actualizarPrecioCompra('${item.codigo}', this.value)"
-            style="width:100%; padding:10px; font-size:16px;"
-          >
+  <label>Costo unitario</label>
+  <input
+    type="number"
+    value="${costo}"
+    onchange="actualizarCostoCompra('${item.codigo}', this.value)"
+    style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+  >
 
-        </div>
-		<div>
+  <label>Precio venta</label>
+  <input
+    type="number"
+    value="${precio}"
+    onchange="actualizarPrecioCompra('${item.codigo}', this.value)"
+    style="width:100%; padding:10px; font-size:16px; margin-bottom:10px;"
+  >
+
+</div>
+
+<div
   id="utilidad-${item.codigo}"
   style="
     margin-top:10px;
-    padding:10px;
+    padding:12px;
     background:${color};
-    border-radius:8px;
+    border-radius:10px;
     font-size:15px;
     color:#065f46;
     font-weight:bold;
+    line-height:1.6;
   "
+>
+
 ${texto}
 
-<br><br>
+<hr style="margin:8px 0; border:none; border-top:1px solid rgba(0,0,0,.15);">
 
-💵 Costo: $${costo.toFixed(2)}
+💵 <b>Costo:</b> $${costo.toFixed(2)}<br>
 
-<br>
+🏷️ <b>Venta:</b> $${precio.toFixed(2)}<br>
 
-🏷️ Venta: $${precio.toFixed(2)}
+💰 <b>Ganancia:</b> $${utilidad.toFixed(2)}<br>
 
-<br>
+📈 <b>Margen:</b> ${margen.toFixed(2)}%
 
-💰 Utilidad: $${utilidad.toFixed(2)}
-
-<br>
-
-📈 Margen: ${margen.toFixed(2)}%      `;
-    }
 </div>
 
+`;
     div.innerHTML = `
       <div class="item-linea">
         <div>
