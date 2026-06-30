@@ -869,8 +869,16 @@ function renderCarrito() {
 
           <label>Cantidad comprada (${item.unidad || "PZ"})</label>
           <input
-            type="number"
-            value="${cantidad}"
+    type="number"
+    step="${
+      item.unidad === 'PZ' ||
+      item.unidad === 'CAJA' ||
+      item.unidad === 'PAQ'
+        ? 1
+        : 0.001
+    }"
+
+    value="${cantidad}"
             onchange="actualizarCantidadCompra('${item.codigo}', this.value)"
             style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
           >
