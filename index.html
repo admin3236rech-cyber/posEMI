@@ -749,6 +749,28 @@ function filtrarProductosAdmin() {
   renderProductosAdmin(filtrados);
 
 }
+
+function mostrarFormularioProducto() {
+
+  document.getElementById("formProducto").style.display = "block";
+
+  document.getElementById("prodCodigo").value = "";
+  document.getElementById("prodNombre").value = "";
+  document.getElementById("prodCosto").value = "";
+  document.getElementById("prodPrecio").value = "";
+
+  document.getElementById("prodUnidad").value = "PZ";
+  document.getElementById("prodConsignacion").value = "PROPIO";
+
+  document.getElementById("prodCodigo").focus();
+
+}
+
+function ocultarFormularioProducto() {
+
+  document.getElementById("formProducto").style.display = "none";
+
+}
 	
 async function cargarProductos() {
   const estado = document.getElementById("estado");
