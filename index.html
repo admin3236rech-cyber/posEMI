@@ -434,6 +434,18 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
     <h2>Alta de producto</h2>
 
     <input id="prodCodigo" type="text" placeholder="Código interno o código de barras"
+		<button class="btn-cargar" onclick="escanearCodigoProducto()">
+  📷 Escanear código del producto
+</button>
+	  <div
+  id="readerProducto"
+  style="
+    display:none;
+    max-width:180px;
+    margin:auto;
+    margin-bottom:12px;
+  "
+></div>
       style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
 
     <input id="prodNombre" type="text" placeholder="Nombre del producto"
@@ -770,6 +782,43 @@ function ocultarFormularioProducto() {
 
   document.getElementById("formProducto").style.display = "none";
 
+}
+
+function escanearCodigoProducto() {
+
+  const reader = document.getElementById("readerProducto");
+
+  reader.style.display = "block";
+
+  const scannerProducto = new Html5Qrcode("readerProducto");
+
+  scannerProducto.start(
+    { facingMode: "environment" },
+    {
+      fps: 10,
+      qrbox: 180
+    },
+    (codigoLeido) => {
+
+      const codigo = codigoLeido.trim();
+
+      document.getElementById("prodCodigo").value = codigo;
+
+      scannerProducto.stop().then(() => {
+        scannerProducto.clear();
+        reader.style.display = "none";
+      });
+
+      mostrarMensaje("✅ Código capturado: " + codigo);
+
+    },
+    (error) => {
+      // Ignorar errores de lectura
+    }
+  ).catch(err => {
+    alert("Error cámara: " + err);
+    reader.style.display = "none";
+  });
 }
 	
 async function cargarProductos() {
