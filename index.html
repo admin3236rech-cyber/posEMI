@@ -789,6 +789,53 @@ function escanearCodigoProducto() {
     reader.style.display = "none";
   });
 }
+
+async function guardarProductoAdmin() {
+
+  const producto = {
+
+    codigo: document.getElementById("prodCodigo").value.trim(),
+    producto: document.getElementById("prodNombre").value.trim(),
+    costo: Number(document.getElementById("prodCosto").value || 0),
+    precio: Number(document.getElementById("prodPrecio").value || 0),
+    unidad: document.getElementById("prodUnidad").value,
+    consignacion: document.getElementById("prodConsignacion").value,
+    existencia: 0
+
+  };
+
+  if (producto.codigo === "") {
+    alert("Captura el código.");
+    return;
+  }
+
+  if (producto.producto === "") {
+    alert("Captura el nombre.");
+    return;
+  }
+
+  const url =
+    API_URL +
+    "?action=guardarProducto&data=" +
+    encodeURIComponent(JSON.stringify(producto));
+
+  const respuesta = await fetch(url);
+  const data = await respuesta.json();
+
+  if (!data.ok) {
+    alert(data.mensaje);
+    return;
+  }
+
+  alert("✅ Producto guardado");
+
+  ocultarFormularioProducto();
+
+  await cargarProductos();
+
+  renderProductosAdmin(POS.productos);
+
+}
 	
 async function cargarProductos() {
   const estado = document.getElementById("estado");
