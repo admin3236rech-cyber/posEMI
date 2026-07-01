@@ -667,7 +667,88 @@ if (!confirm("¿Deseas cerrar la sesión?")) return;
 // ==================================================
 // PRODUCTOS
 // ==================================================
+function mostrarProductosAdmin() {
 
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaProductos").style.display = "block";
+
+  renderProductosAdmin(POS.productos);
+
+}
+
+function renderProductosAdmin(lista) {
+
+  const contenedor = document.getElementById("listaProductosAdmin");
+
+  contenedor.innerHTML = "";
+
+  if (!lista || lista.length === 0) {
+    contenedor.innerHTML = `
+      <div style="background:white; padding:14px; border-radius:12px;">
+        No hay productos para mostrar.
+      </div>
+    `;
+    return;
+  }
+
+  lista.forEach(producto => {
+
+    const div = document.createElement("div");
+
+    div.className = "item-carrito";
+
+    div.innerHTML = `
+      <div class="item-linea">
+        <div>
+          <div class="item-nombre">${producto.producto}</div>
+          <div class="item-info">
+            Código: ${producto.codigo}<br>
+            Existencia: ${producto.existencia || 0} ${producto.unidad || "PZ"}<br>
+            Costo prom.: $${Number(producto.costo || 0).toFixed(2)}<br>
+            Precio venta: $${Number(producto.precio || 0).toFixed(2)}<br>
+            Tipo: ${producto.consignacion || "PROPIO"}
+          </div>
+        </div>
+
+        <div class="item-importe">
+          ${producto.activo === "SI" ? "🟢" : "🔴"}
+        </div>
+      </div>
+
+      <div class="item-botones">
+        <button onclick="editarProductoAdmin('${producto.codigo}')">
+          ✏️ Editar
+        </button>
+      </div>
+    `;
+
+    contenedor.appendChild(div);
+
+  });
+
+}
+
+function filtrarProductosAdmin() {
+
+  const texto = document
+    .getElementById("buscadorProductosAdmin")
+    .value
+    .toLowerCase()
+    .trim();
+
+  if (texto === "") {
+    renderProductosAdmin(POS.productos);
+    return;
+  }
+
+  const filtrados = POS.productos.filter(p =>
+    String(p.codigo).toLowerCase().includes(texto) ||
+    String(p.producto).toLowerCase().includes(texto)
+  );
+
+  renderProductosAdmin(filtrados);
+
+}
 	
 async function cargarProductos() {
   const estado = document.getElementById("estado");
@@ -781,19 +862,6 @@ function filtrarProductos() {
   sugerencias.style.display = "block";
 
 }
-
-function mostrarProductos(listaMostrar) {
-
-  if (listaMostrar.length === 1) {
-
-    agregarAlCarrito(listaMostrar[0].codigo);
-
-    document.getElementById("buscador").value = "";
-
-  }
-}
-
-
 
 // ==================================================
 // CARRITO
