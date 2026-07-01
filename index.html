@@ -410,6 +410,78 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
 
   <h1>Productos</h1>
 
+  <input
+    id="buscadorProductosAdmin"
+    type="text"
+    placeholder="Buscar producto o código..."
+    onkeyup="filtrarProductosAdmin()"
+    style="
+      width:100%;
+      padding:14px;
+      font-size:18px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      margin-bottom:12px;
+    "
+  >
+
+  <button class="btn-cargar" onclick="mostrarFormularioProducto()">
+    ➕ Nuevo producto
+  </button>
+
+  <div id="formProducto" style="display:none; background:white; padding:12px; border-radius:12px; margin-bottom:12px;">
+
+    <h2>Alta de producto</h2>
+
+    <input id="prodCodigo" type="text" placeholder="Código interno o código de barras"
+      style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+
+    <input id="prodNombre" type="text" placeholder="Nombre del producto"
+      style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+
+    <select id="prodUnidad"
+      style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+      <option value="PZ">PZ</option>
+      <option value="KG">KG</option>
+      <option value="L">L</option>
+      <option value="ML">ML</option>
+      <option value="GR">GR</option>
+      <option value="CAJA">CAJA</option>
+      <option value="PAQ">PAQ</option>
+    </select>
+
+    <input id="prodCosto" type="number" placeholder="Costo"
+      style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+
+    <input id="prodPrecio" type="number" placeholder="Precio venta"
+      style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+
+    <select id="prodConsignacion"
+      style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+      <option value="PROPIO">PROPIO</option>
+      <option value="CONSIGNACION">CONSIGNACION</option>
+    </select>
+
+    <button class="btn-cargar" onclick="guardarProductoAdmin()">
+      Guardar producto
+    </button>
+
+    <button class="btn-eliminar" style="width:100%;" onclick="ocultarFormularioProducto()">
+      Cancelar
+    </button>
+
+  </div>
+
+  <div id="listaProductosAdmin"></div>
+
+  <button class="btn-eliminar" style="width:100%;" onclick="regresarAdminDesdeProductos()">
+    ⬅️ Regresar
+  </button>
+
+</div>
+
+  <h1>Productos</h1>
+
   <button class="btn-cargar">
     ➕ Nuevo producto
   </button>
