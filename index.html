@@ -434,6 +434,8 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
     <h2>Alta de producto</h2>
 
     <input id="prodCodigo" type="text" placeholder="Código interno o código de barras"
+		style="width:100%; padding:12px; font-size:16px; margin-bottom:8px;">
+	  >
 		<button class="btn-cargar" onclick="escanearCodigoProducto()">
   📷 Escanear código del producto
 </button>
@@ -1211,68 +1213,7 @@ function limpiarOperacion() {
 // ==================================================
 // COMPRAS
 // ==================================================
-function mostrarAltaRapidaCompra(codigo = "") {
 
-  if (POS.modo !== "COMPRA") return;
-
-  document.getElementById("altaRapidaCompra").style.display = "block";
-  document.getElementById("nuevoCodigo").value = codigo;
-  document.getElementById("nuevoProducto").focus();
-
-}
-
-function guardarProductoCompra() {
-
-  const codigo = document.getElementById("nuevoCodigo").value.trim();
-  const producto = document.getElementById("nuevoProducto").value.trim();
-  const unidad = document.getElementById("nuevaUnidad").value;
-  const costo = Number(document.getElementById("nuevoCosto").value || 0);
-  const precio = Number(document.getElementById("nuevoPrecio").value || 0);
-
-  if (codigo === "") {
-    alert("Captura el código");
-    return;
-  }
-
-  if (producto === "") {
-    alert("Captura el nombre del producto");
-    return;
-  }
-
-  const nuevoProducto = {
-    codigo: codigo,
-    producto: producto,
-    precio: precio,
-    costo: costo,
-    existencia: 0,
-    activo: "SI",
-    unidad: unidad,
-    consignacion: "PROPIO"
-  };
-
-  POS.productos.push(nuevoProducto);
-
-  POS.carrito.unshift({
-    codigo: nuevoProducto.codigo,
-    producto: nuevoProducto.producto,
-    precio: nuevoProducto.precio,
-    costo: nuevoProducto.costo,
-    cantidad: 1,
-    unidad: nuevoProducto.unidad,
-    consignacion: "PROPIO"
-  });
-
-  document.getElementById("altaRapidaCompra").style.display = "none";
-
-  document.getElementById("nuevoCodigo").value = "";
-  document.getElementById("nuevoProducto").value = "";
-  document.getElementById("nuevoCosto").value = "";
-  document.getElementById("nuevoPrecio").value = "";
-
-  renderCarrito();
-
-  mostrarMensaje("✅ Producto creado en compra");
-}
 // ==================================================
 // PAGOS Y VENTAS
 // ==================================================
