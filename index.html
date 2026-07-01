@@ -708,7 +708,17 @@ function renderProductosAdmin(lista) {
   });
 
 }
+function mostrarProductos(listaMostrar) {
 
+  if (listaMostrar.length === 1) {
+
+    agregarAlCarrito(listaMostrar[0].codigo);
+
+    document.getElementById("buscador").value = "";
+
+  }
+
+}
 function filtrarProductosAdmin() {
 
   const texto = document
