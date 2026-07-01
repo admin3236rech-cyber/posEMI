@@ -1489,15 +1489,21 @@ if (!producto) {
 
   if (POS.modo === "COMPRA") {
 
-    mostrarAltaRapidaCompra(codigo);
+  detenerEscaner();
 
-    mostrarMensaje(
-      "📦 Producto nuevo. Captura sus datos.",
-      "error"
-    );
+  mostrarProductosAdmin();
 
-    return;
-  }
+  mostrarFormularioProducto();
+
+  document.getElementById("prodCodigo").value = codigo;
+
+  mostrarMensaje(
+    "📦 Producto no existe. Complétalo y guárdalo.",
+    "error"
+  );
+
+  return;
+}
 
   if (esAdmin()) {
 
