@@ -1238,19 +1238,68 @@ async function guardarVenta() {
 }
 async function guardarCompra() {
 
+  const proveedor = document.getElementById("proveedorCompra").value.trim();
+  const factura = document.getElementById("facturaCompra").value.trim();
+  const observacion = document.getElementById("observacionCompra").value.trim();
+  const fechaCompra = document.getElementById("fechaCompra").value;
+
+  if (proveedor === "") {
+    alert("Captura el proveedor");
+    return;
+  }
+
+  if (fechaCompra === "") {
+    alert("Captura la fecha de compra");
+    return;
+  }
+
+  const total = POS.carrito.reduce(
+    (suma, item) => suma + (Number(item.cantidad) * Number(item.costo || 0)),
+    0
+  );
+
   const compra = {
     folio: "C-" + new Date().getTime(),
     usuario: POS.usuario,
-    proveedor: "",
-    factura: "",
-    observacion: "",
+    proveedor: proveedor,
+    factura: factura,
+    observacion: observacion,
+    fechaCompra: fechaCompra,
+    total: total,
     items: POS.carrito
   };
 
-  console.log("COMPRA A GUARDAR:", compra);
+  const url =
+    API_URL +
+    "?action=guardarCompra&data=" +
+    encodeURIComponent(JSON.stringify(compra));
 
-  alert("Compra preparada correctamente. Siguiente paso: enviarla a Apps Script.");
+  const respuesta = await fetch(url);
+  const texto = await respuesta.text();
 
+  let data;
+
+  try {
+    data = JSON.parse(texto);
+  } catch (e) {
+    alert("Apps Script no respondió JSON.\nRevisa si la compra se guardó antes de intentar otra vez.");
+    return;
+  }
+
+  if (data.ok) {
+    alert("Compra guardada correctamente");
+
+    document.getElementById("proveedorCompra").value = "";
+    document.getElementById("facturaCompra").value = "";
+    document.getElementById("observacionCompra").value = "";
+    document.getElementById("fechaCompra").value = "";
+
+    limpiarOperacion();
+    cargarProductos();
+
+  } else {
+    alert("Error: " + data.mensaje);
+  }
 }
 // ==================================================
 // ESCÁNER
