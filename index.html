@@ -816,10 +816,17 @@ function escanearCodigoProducto() {
     return;
   }
 
-  const url =
-    API_URL +
-    "?action=guardarProducto&data=" +
-    encodeURIComponent(JSON.stringify(producto));
+ const modoProducto = document.getElementById("prodModo").value;
+
+const accion =
+  modoProducto === "EDITAR"
+    ? "actualizarProducto"
+    : "guardarProducto";
+
+const url =
+  API_URL +
+  "?action=" + accion + "&data=" +
+  encodeURIComponent(JSON.stringify(producto));
 
   const respuesta = await fetch(url);
   const data = await respuesta.json();
