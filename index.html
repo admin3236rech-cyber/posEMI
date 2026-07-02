@@ -708,17 +708,6 @@ function renderProductosAdmin(lista) {
   });
 
 }
-function mostrarProductos(listaMostrar) {
-
-  if (listaMostrar.length === 1) {
-
-    agregarAlCarrito(listaMostrar[0].codigo);
-
-    document.getElementById("buscador").value = "";
-
-  }
-
-}
 function filtrarProductosAdmin() {
 
   const texto = document
@@ -864,7 +853,9 @@ async function cargarProductos() {
     POS.productos = data.productos;
     estado.innerText = "Productos cargados: " + POS.productos.length;
 
-	mostrarProductos(POS.productos);
+	if (document.getElementById("pantallaProductos").style.display === "block") {
+  renderProductosAdmin(POS.productos);
+}
 
   } catch (error) {
     estado.innerText = "Error de conexión: " + error.message;
