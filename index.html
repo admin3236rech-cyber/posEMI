@@ -1024,6 +1024,10 @@ function editarProductoAdmin(codigo) {
   document.getElementById("prodCodigo").disabled = true;
 
   document.getElementById("prodNombre").focus();
+	document.getElementById("formProducto").scrollIntoView({
+  behavior: "smooth",
+  block: "start"
+});
 }
 
 // ==================================================
