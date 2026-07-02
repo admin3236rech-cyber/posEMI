@@ -794,7 +794,6 @@ function escanearCodigoProducto() {
 	async function guardarProductoAdmin() {
 
   const producto = {
-
     codigo: document.getElementById("prodCodigo").value.trim(),
     producto: document.getElementById("prodNombre").value.trim(),
     costo: Number(document.getElementById("prodCosto").value || 0),
@@ -802,7 +801,6 @@ function escanearCodigoProducto() {
     unidad: document.getElementById("prodUnidad").value,
     consignacion: document.getElementById("prodConsignacion").value,
     existencia: 0
-
   };
 
   if (producto.codigo === "") {
@@ -830,55 +828,60 @@ function escanearCodigoProducto() {
 
   alert("✅ Producto guardado");
 
-ocultarFormularioProducto();
+  ocultarFormularioProducto();
 
-await cargarProductos();
-const existe = POS.productos.some(
-    p => String(p.codigo).trim() === codigoNuevo
-);
+  await cargarProductos();
 
-if (!existe) {
+  if (POS.volverACompra && POS.productoPendiente) {
 
-    await cargarProductos();
+    const codigoNuevo = POS.productoPendiente;
 
+    let existe = POS.productos.some(
+      p => String(p.codigo).trim() === codigoNuevo
+    );
+
+    if (!existe) {
+      await cargarProductos();
+
+      existe = POS.productos.some(
+        p => String(p.codigo).trim() === codigoNuevo
+      );
+    }
+
+    if (!existe) {
+      alert("El producto se guardó, pero aún no se ha sincronizado. Intenta nuevamente.");
+      return;
+    }
+
+    POS.productoPendiente = null;
+    POS.volverACompra = false;
+
+    document.getElementById("pantallaProductos").style.display = "none";
+    document.getElementById("pantallaAdmin").style.display = "none";
+    document.getElementById("pantallaVenta").style.display = "block";
+
+    document.getElementById("modoOperacion").value = "COMPRA";
+    POS.modo = "COMPRA";
+
+    document.getElementById("bloquePago").style.display = "none";
+    document.getElementById("bloqueCompra").style.display = "block";
+    document.getElementById("btnCobrar").innerText = "Guardar compra";
+    document.getElementById("tituloCarrito").innerText = "Detalle de compra";
+
+    const modo = document.getElementById("modoActual");
+    modo.innerText = "📦 COMPRA";
+    modo.style.background = "#2563eb";
+    modo.style.color = "white";
+
+    agregarAlCarrito(codigoNuevo, "ALTA_PRODUCTO");
+
+    mostrarMensaje("✅ Producto creado y agregado a compra");
+
+    return;
+  }
+
+  renderProductosAdmin(POS.productos);
 }
-
-if (POS.volverACompra && POS.productoPendiente) {
-
-  const codigoNuevo = POS.productoPendiente;
-
-  POS.productoPendiente = null;
-  POS.volverACompra = false;
-
-  document.getElementById("pantallaProductos").style.display = "none";
-  document.getElementById("pantallaAdmin").style.display = "none";
-  document.getElementById("pantallaVenta").style.display = "block";
-	ocultarFormularioProducto();
-
-  document.getElementById("modoOperacion").value = "COMPRA";
-  POS.modo = "COMPRA";
-
-  document.getElementById("bloquePago").style.display = "none";
-  document.getElementById("bloqueCompra").style.display = "block";
-  document.getElementById("btnCobrar").innerText = "Guardar compra";
-  document.getElementById("tituloCarrito").innerText = "Detalle de compra";
-
-  const modo = document.getElementById("modoActual");
-  modo.innerText = "📦 COMPRA";
-  modo.style.background = "#2563eb";
-  modo.style.color = "white";
-
-  agregarAlCarrito(codigoNuevo, "ALTA_PRODUCTO");
-
-  mostrarMensaje("✅ Producto creado y agregado a compra");
-
-  return;
-}
-
-renderProductosAdmin(POS.productos);
-
-}
-	
 async function cargarProductos() {
   const estado = document.getElementById("estado");
 
