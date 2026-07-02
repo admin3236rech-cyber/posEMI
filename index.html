@@ -492,6 +492,8 @@ const POS = {
 
   // Venta actual
   carrito: [],
+	productoPendiente: null,
+	volverACompra: false,
 
   // Escáner
   escaner: null,
@@ -828,11 +830,42 @@ async function guardarProductoAdmin() {
 
   alert("✅ Producto guardado");
 
-  ocultarFormularioProducto();
+ocultarFormularioProducto();
 
-  await cargarProductos();
+await cargarProductos();
 
-  renderProductosAdmin(POS.productos);
+if (POS.volverACompra && POS.productoPendiente) {
+
+  const codigoNuevo = POS.productoPendiente;
+
+  POS.productoPendiente = null;
+  POS.volverACompra = false;
+
+  document.getElementById("pantallaProductos").style.display = "none";
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaVenta").style.display = "block";
+
+  document.getElementById("modoOperacion").value = "COMPRA";
+  POS.modo = "COMPRA";
+
+  document.getElementById("bloquePago").style.display = "none";
+  document.getElementById("bloqueCompra").style.display = "block";
+  document.getElementById("btnCobrar").innerText = "Guardar compra";
+  document.getElementById("tituloCarrito").innerText = "Detalle de compra";
+
+  const modo = document.getElementById("modoActual");
+  modo.innerText = "📦 COMPRA";
+  modo.style.background = "#2563eb";
+  modo.style.color = "white";
+
+  agregarAlCarrito(codigoNuevo, "ALTA_PRODUCTO");
+
+  mostrarMensaje("✅ Producto creado y agregado a compra");
+
+  return;
+}
+
+renderProductosAdmin(POS.productos);
 
 }
 	
@@ -1505,13 +1538,16 @@ if (!producto) {
 
   if (POS.modo === "COMPRA") {
 
-  detenerEscaner();
+POS.productoPendiente = codigo;
+POS.volverACompra = true;
 
-  mostrarProductosAdmin();
+detenerEscaner();
 
-  mostrarFormularioProducto();
+mostrarProductosAdmin();
 
-  document.getElementById("prodCodigo").value = codigo;
+mostrarFormularioProducto();
+
+document.getElementById("prodCodigo").value = codigo;
 
   mostrarMensaje(
     "📦 Producto no existe. Complétalo y guárdalo.",
