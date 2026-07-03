@@ -1131,7 +1131,33 @@ function renderCarrito() {
     if (POS.modo === "VENTA") {
       importe = cantidad * precio;
     }
+let camposVentaGranel = "";
 
+if (POS.modo === "VENTA" && esUnidadGranel(item.unidad)) {
+  camposVentaGranel = `
+    <div style="margin-top:10px;">
+
+      <label>Cantidad vendida (${item.unidad || "KG"})</label>
+      <input
+        type="number"
+        step="0.001"
+        value="${cantidad}"
+        onchange="actualizarCantidadVentaGranel('${item.codigo}', this.value)"
+        style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+      >
+
+      <label>Importe en pesos</label>
+      <input
+        type="number"
+        step="0.01"
+        value="${importe.toFixed(2)}"
+        onchange="actualizarImporteVentaGranel('${item.codigo}', this.value)"
+        style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
+      >
+
+    </div>
+  `;
+}
     if (POS.modo === "COMPRA") {
       importe = cantidad * costo;
     }
@@ -1248,7 +1274,8 @@ function renderCarrito() {
         <div class="item-importe">$${importe.toFixed(2)}</div>
       </div>
 
-      ${camposCompra}
+    ${camposVentaGranel}
+	${camposCompra}
 
       <div class="item-botones">
         <button onclick="agregarAlCarrito('${item.codigo}','BOTON_MAS')">+</button>
@@ -1310,7 +1337,31 @@ function limpiarOperacion() {
   document.getElementById("buscador").value = "";
 
 }
+function actualizarCantidadVentaGranel(codigo, valor) {
+  const item = POS.carrito.find(i => i.codigo === codigo);
+  if (!item) return;
 
+  item.cantidad = Number(valor || 0);
+
+  renderCarrito();
+}
+
+function actualizarImporteVentaGranel(codigo, valor) {
+  const item = POS.carrito.find(i => i.codigo === codigo);
+  if (!item) return;
+
+  const importe = Number(valor || 0);
+  const precio = Number(item.precio || 0);
+
+  if (precio <= 0) {
+    alert("El producto no tiene precio válido.");
+    return;
+  }
+
+  item.cantidad = importe / precio;
+
+  renderCarrito();
+}
 
 // ==================================================
 // COMPRAS
@@ -1796,6 +1847,16 @@ function esAdmin() {
     div.style.display = "none";
   }, 5000);
 
+}
+function esUnidadGranel(unidad) {
+  unidad = String(unidad || "PZ").toUpperCase();
+
+  return (
+    unidad === "KG" ||
+    unidad === "GR" ||
+    unidad === "L" ||
+    unidad === "ML"
+  );
 }
 	
 window.addEventListener("load", cargarSesion);	
