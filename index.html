@@ -1904,7 +1904,53 @@ function calcularCantidadGranel() {
 }
 function aceptarGranel() {
 
-  alert("Ya abrió correctamente 😄");
+  const cantidad = Number(
+    document.getElementById("cantidadGranel").value || 0
+  );
+
+  if (cantidad <= 0) {
+    alert("Captura una cantidad válida.");
+    return;
+  }
+
+  const index = POS.carrito.findIndex(
+    i => i.codigo === productoGranel.codigo
+  );
+
+  if (index >= 0) {
+
+    POS.carrito[index].cantidad += cantidad;
+
+    POS.carrito.splice(index, 1);
+    POS.carrito.unshift(POS.carrito[index]);
+
+  } else {
+
+    POS.carrito.unshift({
+
+      codigo: productoGranel.codigo,
+      producto: productoGranel.producto,
+      precio: productoGranel.precio,
+      costo: productoGranel.costo || 0,
+
+      cantidad: cantidad,
+
+      unidad: productoGranel.unidad,
+      consignacion: productoGranel.consignacion
+
+    });
+
+  }
+
+  cerrarModalGranel();
+
+  renderCarrito();
+
+  mostrarMensaje(
+    "✅ " +
+    productoGranel.producto +
+    " agregado."
+  );
 
 }
 	
