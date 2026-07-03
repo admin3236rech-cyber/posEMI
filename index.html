@@ -1812,7 +1812,37 @@ function esUnidadGranel(unidad) {
   );
 }
 let productoGranel = null;
+let modoGranel = "CANTIDAD";
+function cambiarModoGranel(modo) {
 
+  modoGranel = modo;
+
+  const inputCantidad = document.getElementById("cantidadGranel");
+  const inputImporte = document.getElementById("importeGranel");
+
+  const btnCantidad = document.getElementById("btnModoCantidad");
+  const btnImporte = document.getElementById("btnModoImporte");
+
+  if (modo === "CANTIDAD") {
+    inputCantidad.disabled = false;
+    inputImporte.disabled = true;
+
+    btnCantidad.style.background = "#0b8043";
+    btnImporte.style.background = "#6b7280";
+
+    inputCantidad.focus();
+  }
+
+  if (modo === "IMPORTE") {
+    inputCantidad.disabled = true;
+    inputImporte.disabled = false;
+
+    btnCantidad.style.background = "#6b7280";
+    btnImporte.style.background = "#0b8043";
+
+    inputImporte.focus();
+  }
+}
 function abrirModalGranel(producto) {
 
   productoGranel = producto;
@@ -1829,9 +1859,9 @@ function abrirModalGranel(producto) {
   document.getElementById("cantidadGranel").value = "";
   document.getElementById("importeGranel").value = "";
 
-  document.getElementById("modalGranel").style.display = "flex";
+ document.getElementById("modalGranel").style.display = "flex";
 
-  document.getElementById("cantidadGranel").focus();
+cambiarModoGranel("IMPORTE");
 
 }
 
@@ -1842,7 +1872,36 @@ function cerrarModalGranel() {
   document.getElementById("modalGranel").style.display = "none";
 
 }
+function calcularImporteGranel() {
 
+  if (!productoGranel) return;
+
+  const cantidad = Number(
+    document.getElementById("cantidadGranel").value || 0
+  );
+
+  const importe = cantidad * Number(productoGranel.precio);
+
+  document.getElementById("importeGranel").value =
+    importe.toFixed(2);
+
+}
+
+function calcularCantidadGranel() {
+
+  if (!productoGranel) return;
+
+  const importe = Number(
+    document.getElementById("importeGranel").value || 0
+  );
+
+  const cantidad =
+    importe / Number(productoGranel.precio);
+
+  document.getElementById("cantidadGranel").value =
+    cantidad.toFixed(3);
+
+}
 function aceptarGranel() {
 
   alert("Ya abrió correctamente 😄");
@@ -1895,13 +1954,34 @@ window.addEventListener("load", cargarSesion);
     >
       Precio
     </div>
+<div style="display:flex; gap:8px; margin-bottom:16px;">
 
+  <button
+    id="btnModoCantidad"
+    class="btn-cargar"
+    style="margin:0;"
+    onclick="cambiarModoGranel('CANTIDAD')"
+  >
+    Cantidad
+  </button>
+
+  <button
+    id="btnModoImporte"
+    class="btn-cargar"
+    style="margin:0; background:#6b7280;"
+    onclick="cambiarModoGranel('IMPORTE')"
+  >
+    Importe
+  </button>
+
+</div>
     <label>Cantidad</label>
 
     <input
       id="cantidadGranel"
       type="number"
       step="0.001"
+		oninput="calcularImporteGranel()"
       style="
         width:100%;
         padding:14px;
@@ -1916,6 +1996,7 @@ window.addEventListener("load", cargarSesion);
       id="importeGranel"
       type="number"
       step="0.01"
+		oninput="calcularCantidadGranel()"
       style="
         width:100%;
         padding:14px;
