@@ -1131,33 +1131,6 @@ function renderCarrito() {
     if (POS.modo === "VENTA") {
       importe = cantidad * precio;
     }
-let camposVentaGranel = "";
-
-if (POS.modo === "VENTA" && esUnidadGranel(item.unidad)) {
-  camposVentaGranel = `
-    <div style="margin-top:10px;">
-
-      <label>Cantidad vendida (${item.unidad || "KG"})</label>
-      <input
-        type="number"
-        step="0.001"
-        value="${cantidad}"
-        onchange="actualizarCantidadVentaGranel('${item.codigo}', this.value)"
-        style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
-      >
-
-      <label>Importe en pesos</label>
-      <input
-        type="number"
-        step="0.01"
-        value="${importe.toFixed(2)}"
-        onchange="actualizarImporteVentaGranel('${item.codigo}', this.value)"
-        style="width:100%; padding:10px; font-size:16px; margin-bottom:8px;"
-      >
-
-    </div>
-  `;
-}
     if (POS.modo === "COMPRA") {
       importe = cantidad * costo;
     }
@@ -1274,7 +1247,6 @@ if (POS.modo === "VENTA" && esUnidadGranel(item.unidad)) {
         <div class="item-importe">$${importe.toFixed(2)}</div>
       </div>
 
-    ${camposVentaGranel}
 	${camposCompra}
 
       <div class="item-botones">
@@ -1336,31 +1308,6 @@ function limpiarOperacion() {
 
   document.getElementById("buscador").value = "";
 
-}
-function actualizarCantidadVentaGranel(codigo, valor) {
-  const item = POS.carrito.find(i => i.codigo === codigo);
-  if (!item) return;
-
-  item.cantidad = Number(valor || 0);
-
-  renderCarrito();
-}
-
-function actualizarImporteVentaGranel(codigo, valor) {
-  const item = POS.carrito.find(i => i.codigo === codigo);
-  if (!item) return;
-
-  const importe = Number(valor || 0);
-  const precio = Number(item.precio || 0);
-
-  if (precio <= 0) {
-    alert("El producto no tiene precio válido.");
-    return;
-  }
-
-  item.cantidad = importe / precio;
-
-  renderCarrito();
 }
 
 // ==================================================
@@ -1858,10 +1805,136 @@ function esUnidadGranel(unidad) {
     unidad === "ML"
   );
 }
+let productoGranel = null;
+
+function abrirModalGranel(producto) {
+
+  productoGranel = producto;
+
+  document.getElementById("tituloGranel").innerText =
+    producto.producto;
+
+  document.getElementById("precioGranel").innerText =
+    "$" +
+    Number(producto.precio).toFixed(2) +
+    " / " +
+    producto.unidad;
+
+  document.getElementById("cantidadGranel").value = "";
+  document.getElementById("importeGranel").value = "";
+
+  document.getElementById("modalGranel").style.display = "flex";
+
+  document.getElementById("cantidadGranel").focus();
+
+}
+
+function cerrarModalGranel() {
+
+  productoGranel = null;
+
+  document.getElementById("modalGranel").style.display = "none";
+
+}
+
+function aceptarGranel() {
+
+  alert("Ya abrió correctamente 😄");
+
+}
 	
 window.addEventListener("load", cargarSesion);	
 
 </script>
+<div
+  id="modalGranel"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.55);
+    z-index:9999;
+    justify-content:center;
+    align-items:center;
+  "
+>
 
+  <div
+    style="
+      width:92%;
+      max-width:420px;
+      background:white;
+      border-radius:18px;
+      padding:20px;
+      box-sizing:border-box;
+    "
+  >
+
+    <h2
+      id="tituloGranel"
+      style="margin-top:0; text-align:center;"
+    >
+      Venta a granel
+    </h2>
+
+    <div
+      id="precioGranel"
+      style="
+        text-align:center;
+        font-size:22px;
+        color:#0b8043;
+        font-weight:bold;
+        margin-bottom:20px;
+      "
+    >
+      Precio
+    </div>
+
+    <label>Cantidad</label>
+
+    <input
+      id="cantidadGranel"
+      type="number"
+      step="0.001"
+      style="
+        width:100%;
+        padding:14px;
+        font-size:22px;
+        margin-bottom:16px;
+      "
+    >
+
+    <label>Importe</label>
+
+    <input
+      id="importeGranel"
+      type="number"
+      step="0.01"
+      style="
+        width:100%;
+        padding:14px;
+        font-size:22px;
+        margin-bottom:20px;
+      "
+    >
+
+    <button
+      class="btn-cargar"
+      onclick="aceptarGranel()"
+    >
+      Aceptar
+    </button>
+
+    <button
+      class="btn-eliminar"
+      style="width:100%;"
+      onclick="cerrarModalGranel()"
+    >
+      Cancelar
+    </button>
+
+  </div>
+
+</div>
 </body>
 </html>
