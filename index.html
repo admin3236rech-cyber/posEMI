@@ -1047,7 +1047,13 @@ function agregarAlCarrito(codigo, origen = "BUSCADOR") {
   const producto = POS.productos.find(p => p.codigo === codigo);
 
   if (!producto) return;
+	if (POS.modo === "VENTA" && esUnidadGranel(producto.unidad)) {
 
+ 	 abrirModalGranel(producto);
+
+ 	 return;
+
+}
   const index = POS.carrito.findIndex(i => i.codigo === codigo);
 
   if (index >= 0) {
