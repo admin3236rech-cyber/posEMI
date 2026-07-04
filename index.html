@@ -937,7 +937,7 @@ const url =
 
   const respuesta = await fetch(url);
   const data = await respuesta.json();
-
+alert(JSON.stringify(data));
   if (!data.ok) {
     alert(data.mensaje);
     return;
