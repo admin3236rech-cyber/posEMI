@@ -1868,6 +1868,98 @@ function regresarAdminDesdeProductos() {
   document.getElementById("pantallaProductos").style.display = "none";
   document.getElementById("pantallaAdmin").style.display = "block";
 }
+async function mostrarReportes() {
+
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaReportes").style.display = "block";
+
+  try {
+
+    const respuesta = await fetch(API_URL + "?action=dashboard");
+    const data = await respuesta.json();
+
+    if (!data.ok) {
+      alert("No fue posible cargar los reportes.");
+      return;
+    }
+
+    document.getElementById("repVentaHoy").innerText =
+      "$" + Number(data.ventaHoy).toFixed(2);
+
+    document.getElementById("repUtilidad").innerText =
+      "$" + Number(data.utilidadHoy).toFixed(2);
+
+    document.getElementById("repTickets").innerText =
+      data.tickets;
+
+    document.getElementById("repPromedio").innerText =
+      "$" + Number(data.ticketPromedio).toFixed(2);
+
+    // TOP PRODUCTOS
+
+    const top = document.getElementById("listaTopProductos");
+    top.innerHTML = "";
+
+    data.top.forEach(p => {
+
+      top.innerHTML += `
+        <div class="item-carrito">
+          <b>${p.producto}</b><br>
+          ${p.cantidad} vendidos
+        </div>
+      `;
+
+    });
+
+    // INVENTARIO
+
+    const inv = document.getElementById("alertasInventario");
+
+    inv.innerHTML = "";
+
+    if (data.sinExistencia.length > 0) {
+
+      inv.innerHTML += "<h3>🔴 Sin existencia</h3>";
+
+      data.sinExistencia.forEach(p => {
+
+        inv.innerHTML += `
+          <div class="item-carrito">${p}</div>
+        `;
+
+      });
+
+    }
+
+    if (data.bajaExistencia.length > 0) {
+
+      inv.innerHTML += "<h3>🟡 Existencia baja</h3>";
+
+      data.bajaExistencia.forEach(p => {
+
+        inv.innerHTML += `
+          <div class="item-carrito">${p}</div>
+        `;
+
+      });
+
+    }
+
+  } catch (e) {
+
+    alert(e);
+
+  }
+
+}
+function regresarAdminDesdeReportes() {
+
+  document.getElementById("pantallaReportes").style.display = "none";
+
+  document.getElementById("pantallaAdmin").style.display = "block";
+
+}
+
 // ==================================================
 // UTILIDADES
 // ==================================================
