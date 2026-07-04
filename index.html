@@ -539,13 +539,24 @@ $0.00
 
 </div>
 
-<h2>🏆 Productos más vendidos</h2>
+<div class="item-carrito">
+  <h3>💵 Efectivo</h3>
+  <div id="repEfectivo" style="font-size:22px;font-weight:bold;">$0.00</div>
+</div>
 
-<div id="listaTopProductos"></div>
+<div class="item-carrito">
+  <h3>💳 Tarjeta</h3>
+  <div id="repTarjeta" style="font-size:22px;font-weight:bold;">$0.00</div>
+</div>
 
-<h2>⚠ Inventario</h2>
+<div class="item-carrito">
+  <h3>🏦 Transferencia</h3>
+  <div id="repTransferencia" style="font-size:22px;font-weight:bold;">$0.00</div>
+</div>
 
-<div id="alertasInventario"></div>
+<div style="text-align:center; color:#555; margin:14px 0;" id="repActualizacion">
+  Última actualización: --
+</div>
 
 <button
 class="btn-eliminar"
@@ -1876,17 +1887,56 @@ function regresarAdminDesdeReportes() {
   document.getElementById("pantallaAdmin").style.display = "block";
 
 }
-function mostrarReportes() {
+
+async function mostrarReportes() {
 
   document.getElementById("pantallaLogin").style.display = "none";
   document.getElementById("pantallaVenta").style.display = "none";
   document.getElementById("pantallaAdmin").style.display = "none";
   document.getElementById("pantallaProductos").style.display = "none";
-
   document.getElementById("pantallaReportes").style.display = "block";
 
-}
+  try {
 
+    const respuesta = await fetch(API_URL + "?action=dashboard");
+    const data = await respuesta.json();
+
+    if (!data.ok) {
+      alert("No fue posible cargar el dashboard.");
+      return;
+    }
+
+    document.getElementById("repVentaHoy").innerText =
+      "$" + Number(data.ventaHoy || 0).toFixed(2);
+
+    document.getElementById("repUtilidad").innerText =
+      "$" + Number(data.utilidadHoy || 0).toFixed(2);
+
+    document.getElementById("repTickets").innerText =
+      Number(data.tickets || 0);
+
+    document.getElementById("repPromedio").innerText =
+      "$" + Number(data.ticketPromedio || 0).toFixed(2);
+
+    document.getElementById("repEfectivo").innerText =
+      "$" + Number(data.efectivo || 0).toFixed(2);
+
+    document.getElementById("repTarjeta").innerText =
+      "$" + Number(data.tarjeta || 0).toFixed(2);
+
+    document.getElementById("repTransferencia").innerText =
+      "$" + Number(data.transferencia || 0).toFixed(2);
+
+    document.getElementById("repActualizacion").innerText =
+      "Última actualización: " + (data.ultimaActualizacion || "--");
+
+  } catch (error) {
+
+    alert("Error al cargar dashboard: " + error.message);
+
+  }
+
+}
 // ==================================================
 // UTILIDADES
 // ==================================================
