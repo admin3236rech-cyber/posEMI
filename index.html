@@ -1868,24 +1868,22 @@ function regresarAdminDesdeProductos() {
   document.getElementById("pantallaProductos").style.display = "none";
   document.getElementById("pantallaAdmin").style.display = "block";
 }
-async function mostrarReportes() {
-
-  alert("Entrando a reportes");
-
-  document.getElementById("pantallaVenta").style.display = "none";
-  document.getElementById("pantallaAdmin").style.display = "none";
-  document.getElementById("pantallaProductos").style.display = "none";
-  document.getElementById("pantallaReportes").style.display = "block";
-
-  alert("Pantalla reportes visible");
-
-}
 
 function regresarAdminDesdeReportes() {
 
   document.getElementById("pantallaReportes").style.display = "none";
 
   document.getElementById("pantallaAdmin").style.display = "block";
+
+}
+function mostrarReportes() {
+
+  document.getElementById("pantallaLogin").style.display = "none";
+  document.getElementById("pantallaVenta").style.display = "none";
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaProductos").style.display = "none";
+
+  document.getElementById("pantallaReportes").style.display = "block";
 
 }
 
