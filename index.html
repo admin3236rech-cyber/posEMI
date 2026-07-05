@@ -783,6 +783,7 @@ function mostrarProductosAdmin() {
   document.getElementById("pantallaProductos").style.display = "block";
 
   renderProductosAdmin(POS.productos);
+history.pushState(null, "", location.href);
 
 }
 
@@ -1833,6 +1834,7 @@ function mostrarAdmin() {
 
   document.getElementById("pantallaAdmin")
     .style.display = "block";
+	history.pushState(null, "", location.href);
 }
 function regresarVenta() {
 
@@ -1955,7 +1957,7 @@ async function mostrarReportes() {
     alert("Error al cargar dashboard: " + error.message);
 
   }
-
+history.pushState(null, "", location.href);
 }
 async function cargarReporteDias(dias) {
   const contenedor = document.getElementById("tablaReporteDias");
@@ -2212,6 +2214,60 @@ function aceptarGranel() {
   );
 
 }
+function pantallaVisibleActual() {
+  if (document.getElementById("pantallaReportes").style.display === "block") {
+    return "REPORTES";
+  }
+
+  if (document.getElementById("pantallaProductos").style.display === "block") {
+    return "PRODUCTOS";
+  }
+
+  if (document.getElementById("pantallaAdmin").style.display === "block") {
+    return "ADMIN";
+  }
+
+  if (document.getElementById("pantallaVenta").style.display === "block") {
+    return "VENTA";
+  }
+
+  return "LOGIN";
+}
+
+function manejarAtrasApp() {
+  const pantalla = pantallaVisibleActual();
+
+  if (pantalla === "REPORTES") {
+    document.getElementById("pantallaReportes").style.display = "none";
+    document.getElementById("pantallaAdmin").style.display = "block";
+    history.pushState(null, "", location.href);
+    return;
+  }
+
+  if (pantalla === "PRODUCTOS") {
+    document.getElementById("pantallaProductos").style.display = "none";
+    document.getElementById("pantallaAdmin").style.display = "block";
+    history.pushState(null, "", location.href);
+    return;
+  }
+
+  if (pantalla === "ADMIN") {
+    document.getElementById("pantallaAdmin").style.display = "none";
+    document.getElementById("pantallaVenta").style.display = "block";
+    history.pushState(null, "", location.href);
+    return;
+  }
+
+  if (pantalla === "VENTA") {
+    history.pushState(null, "", location.href);
+    mostrarMensaje("Presiona 🚪 Salir para cerrar sesión.", "error");
+    return;
+  }
+}
+
+window.addEventListener("popstate", manejarAtrasApp);
+
+history.pushState(null, "", location.href);
 	
 window.addEventListener("load", cargarSesion);	
 
