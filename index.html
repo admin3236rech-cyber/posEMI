@@ -327,6 +327,7 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   <option value="EFECTIVO">Efectivo</option>
   <option value="TARJETA">Tarjeta</option>
   <option value="TRANSFERENCIA">Transferencia</option>
+ <option value="CREDITO">Crédito</option>
 </select>
 <div id="bloqueEfectivo">
 
@@ -343,6 +344,88 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   <div id="cambio" style="margin-top:10px; font-size:24px; font-weight:bold; color:#0b8043;">
     Cambio: ---
   </div>
+<div
+  id="bloqueCredito"
+  style="
+    display:none;
+    background:white;
+    padding:14px;
+    border-radius:12px;
+    margin-bottom:14px;
+    box-shadow:0 1px 3px rgba(0,0,0,.12);
+  "
+>
+
+  <h2 style="margin-top:0;">
+    Cliente de crédito
+  </h2>
+
+  <select
+    id="clienteCredito"
+    onchange="mostrarDatosClienteCredito()"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:14px;
+      font-size:17px;
+      border-radius:10px;
+      margin-bottom:12px;
+    "
+  >
+    <option value="">
+      Selecciona un cliente
+    </option>
+  </select>
+
+  <div
+    id="datosClienteCredito"
+    style="
+      display:none;
+      padding:12px;
+      background:#f0fdf4;
+      border-radius:10px;
+      line-height:1.7;
+      margin-bottom:12px;
+    "
+  ></div>
+
+  <label>
+    Fecha límite de pago
+  </label>
+
+  <input
+    id="fechaLimiteCredito"
+    type="date"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:14px;
+      font-size:17px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      margin:6px 0 12px;
+    "
+  >
+
+  <label>
+    Observaciones
+  </label>
+
+  <textarea
+    id="observacionCredito"
+    placeholder="Ej. Paga cada viernes..."
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:14px;
+      font-size:16px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      min-height:80px;
+    "
+  ></textarea>
+
+</div>
 </div>
 </div>
 	
@@ -1575,6 +1658,12 @@ function renderCarrito() {
   totalDiv.innerText = textoTotal + ": $" + total.toFixed(2);
 
   calcularCambio();
+
+if (
+  document.getElementById("metodoPago").value ===
+  "CREDITO"
+) {
+  mostrarDatosClienteCredito();
 }
 function actualizarCantidadCompra(codigo, valor) {
   const item = POS.carrito.find(i => i.codigo === codigo);
@@ -1612,6 +1701,16 @@ function limpiarOperacion() {
 
   document.getElementById("metodoPago").value = "EFECTIVO";
 
+	document.getElementById("clienteCredito").value = "";
+
+document.getElementById("fechaLimiteCredito").value = "";
+
+document.getElementById("observacionCredito").value = "";
+
+document.getElementById("datosClienteCredito").innerHTML = "";
+
+document.getElementById("datosClienteCredito").style.display = "none";
+
   cambiarMetodoPago();
 
   document.getElementById("buscador").value = "";
@@ -1647,22 +1746,29 @@ function calcularCambio() {
   document.getElementById("cambio").innerText =
     "Cambio: $" + cambio.toFixed(2);
 }
-function cambiarMetodoPago() {
-
+async function cambiarMetodoPago() {
   const metodo =
     document.getElementById("metodoPago").value;
 
-  const bloque =
+  const bloqueEfectivo =
     document.getElementById("bloqueEfectivo");
 
-  if (metodo === "EFECTIVO") {
+  const bloqueCredito =
+    document.getElementById("bloqueCredito");
 
-    bloque.style.display = "block";
+  bloqueEfectivo.style.display =
+    metodo === "EFECTIVO"
+      ? "block"
+      : "none";
 
-  } else {
+  bloqueCredito.style.display =
+    metodo === "CREDITO"
+      ? "block"
+      : "none";
 
-    bloque.style.display = "none";
-
+  if (metodo === "CREDITO") {
+    await cargarClientesParaCredito();
+    establecerFechaLimiteCredito();
   }
 }
 
@@ -1727,14 +1833,58 @@ async function guardarVenta() {
   );
 
   const metodoPago = document.getElementById("metodoPago").value;
+const idCliente =
+  document.getElementById("clienteCredito").value;
 
+const fechaLimiteCredito =
+  document.getElementById("fechaLimiteCredito").value;
+
+const observacionCredito =
+  document.getElementById("observacionCredito").value.trim();
   const textoRecibido =
     document.getElementById("importeRecibido").value.trim();
 
   const recibido = Number(textoRecibido || 0);
 
   if (metodoPago === "EFECTIVO") {
+if (metodoPago === "CREDITO") {
+  if (idCliente === "") {
+    alert("Selecciona el cliente de crédito");
+    return;
+  }
 
+  const cliente = POS.clientes.find(
+    c => String(c.id) === String(idCliente)
+  );
+
+  if (!cliente) {
+    alert("El cliente seleccionado no es válido");
+    return;
+  }
+
+  const limite =
+    Number(cliente.limiteCredito || 0);
+
+  const saldo =
+    Number(cliente.saldo || 0);
+
+  const disponible =
+    limite - saldo;
+
+  if (total > disponible) {
+    alert(
+      "Crédito insuficiente.\n" +
+      "Disponible: $" +
+      Math.max(0, disponible).toFixed(2)
+    );
+    return;
+  }
+
+  if (fechaLimiteCredito === "") {
+    alert("Captura la fecha límite de pago");
+    return;
+  }
+}
     if (textoRecibido === "") {
       alert("Ingresa el importe recibido");
       return;
@@ -1746,14 +1896,30 @@ async function guardarVenta() {
     }
 
   }
+const venta = {
+  folio: "V-" + new Date().getTime(),
+  usuario: POS.usuario,
+  total: total,
+  metodoPago: metodoPago,
 
-  const venta = {
-    folio: "V-" + new Date().getTime(),
-    usuario: POS.usuario,
-    total: total,
-    metodoPago: metodoPago,
-    items: POS.carrito
-  };
+  idCliente:
+    metodoPago === "CREDITO"
+      ? idCliente
+      : "",
+
+  fechaLimiteCredito:
+    metodoPago === "CREDITO"
+      ? fechaLimiteCredito
+      : "",
+
+  observacionCredito:
+    metodoPago === "CREDITO"
+      ? observacionCredito
+      : "",
+
+  items: POS.carrito
+};
+
 
   const url =
     API_URL +
@@ -2528,6 +2694,171 @@ function escaparAtributo(valor) {
     .replaceAll("\\", "\\\\")
     .replaceAll("'", "\\'");
 }	
+
+async function cargarClientesParaCredito() {
+  const selector =
+    document.getElementById("clienteCredito");
+
+  selector.innerHTML = `
+    <option value="">
+      Cargando clientes...
+    </option>
+  `;
+
+  try {
+    const respuesta = await fetch(
+      API_URL + "?action=clientes"
+    );
+
+    const data = await respuesta.json();
+
+    if (!data.ok) {
+      selector.innerHTML = `
+        <option value="">
+          No fue posible cargar clientes
+        </option>
+      `;
+      return;
+    }
+
+    POS.clientes = (data.clientes || []).filter(
+      cliente => cliente.activo === "SI"
+    );
+
+    selector.innerHTML = `
+      <option value="">
+        Selecciona un cliente
+      </option>
+    `;
+
+    POS.clientes.forEach(cliente => {
+      const saldo =
+        Number(cliente.saldo || 0);
+
+      const limite =
+        Number(cliente.limiteCredito || 0);
+
+      const disponible =
+        Math.max(0, limite - saldo);
+
+      const opcion =
+        document.createElement("option");
+
+      opcion.value = cliente.id;
+
+      opcion.textContent =
+        cliente.nombre +
+        " · Disponible $" +
+        disponible.toFixed(2);
+
+      selector.appendChild(opcion);
+    });
+
+  } catch (error) {
+    selector.innerHTML = `
+      <option value="">
+        Error de conexión
+      </option>
+    `;
+  }
+}
+
+
+function mostrarDatosClienteCredito() {
+  const idCliente =
+    document.getElementById("clienteCredito").value;
+
+  const bloque =
+    document.getElementById("datosClienteCredito");
+
+  if (idCliente === "") {
+    bloque.style.display = "none";
+    bloque.innerHTML = "";
+    return;
+  }
+
+  const cliente = POS.clientes.find(
+    c => String(c.id) === String(idCliente)
+  );
+
+  if (!cliente) {
+    bloque.style.display = "none";
+    return;
+  }
+
+  const limite =
+    Number(cliente.limiteCredito || 0);
+
+  const saldo =
+    Number(cliente.saldo || 0);
+
+  const disponible =
+    Math.max(0, limite - saldo);
+
+  const totalVenta = POS.carrito.reduce(
+    (suma, item) =>
+      suma +
+      Number(item.cantidad || 0) *
+      Number(item.precio || 0),
+    0
+  );
+
+  const saldoDespues =
+    saldo + totalVenta;
+
+  const permitido =
+    saldoDespues <= limite;
+
+  bloque.innerHTML = `
+    <strong>${escaparHTML(cliente.nombre)}</strong><br>
+    Límite: $${limite.toFixed(2)}<br>
+    Saldo actual: $${saldo.toFixed(2)}<br>
+    Disponible: $${disponible.toFixed(2)}<br>
+    Nueva venta: $${totalVenta.toFixed(2)}<br>
+
+    <strong style="
+      color:${permitido ? "#166534" : "#b91c1c"};
+    ">
+      ${
+        permitido
+          ? "✅ Crédito disponible"
+          : "❌ Crédito insuficiente"
+      }
+    </strong>
+  `;
+
+  bloque.style.background =
+    permitido
+      ? "#f0fdf4"
+      : "#fef2f2";
+
+  bloque.style.display = "block";
+}
+
+
+function establecerFechaLimiteCredito() {
+  const campo =
+    document.getElementById("fechaLimiteCredito");
+
+  if (campo.value !== "") return;
+
+  const fecha = new Date();
+
+  fecha.setDate(fecha.getDate() + 15);
+
+  const anio = fecha.getFullYear();
+
+  const mes = String(
+    fecha.getMonth() + 1
+  ).padStart(2, "0");
+
+  const dia = String(
+    fecha.getDate()
+  ).padStart(2, "0");
+
+  campo.value =
+    anio + "-" + mes + "-" + dia;
+}
 // ==================================================
 // UTILIDADES
 // ==================================================
