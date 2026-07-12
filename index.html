@@ -390,10 +390,13 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
 >
   📊 Reportes
 </button>
-
-  <button class="btn-cargar">
-    👤 Usuarios
-  </button>
+<button
+  class="btn-cargar"
+  onclick="mostrarClientesAdmin()"
+>
+  👥 Clientes
+</button>
+  
 <button
   class="btn-cargar"
   style="background:#b91c1c;"
@@ -497,6 +500,176 @@ style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bott
   </button>
 
 </div>	
+
+<div id="pantallaClientes" style="display:none;">
+
+  <h1>👥 Clientes</h1>
+
+  <input
+    id="buscadorClientes"
+    type="text"
+    placeholder="Buscar por nombre, teléfono o ID..."
+    oninput="filtrarClientesAdmin()"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:14px;
+      font-size:18px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      margin-bottom:12px;
+    "
+  >
+
+  <button
+    class="btn-cargar"
+    onclick="mostrarFormularioCliente()"
+  >
+    ➕ Nuevo cliente
+  </button>
+
+  <div
+    id="formCliente"
+    style="
+      display:none;
+      background:white;
+      padding:14px;
+      border-radius:12px;
+      margin-bottom:14px;
+      box-shadow:0 1px 3px rgba(0,0,0,.12);
+    "
+  >
+
+    <h2 id="tituloFormularioCliente">
+      Alta de cliente
+    </h2>
+
+    <input
+      id="clienteModo"
+      type="hidden"
+      value="NUEVO"
+    >
+
+    <input
+      id="clienteId"
+      type="hidden"
+    >
+
+    <label>Nombre</label>
+
+    <input
+      id="clienteNombre"
+      type="text"
+      placeholder="Nombre completo"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:12px;
+        font-size:16px;
+        margin:6px 0 10px;
+      "
+    >
+
+    <label>Teléfono</label>
+
+    <input
+      id="clienteTelefono"
+      type="tel"
+      placeholder="Número telefónico"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:12px;
+        font-size:16px;
+        margin:6px 0 10px;
+      "
+    >
+
+    <label>Dirección</label>
+
+    <textarea
+      id="clienteDireccion"
+      placeholder="Dirección o referencia"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:12px;
+        font-size:16px;
+        min-height:80px;
+        margin:6px 0 10px;
+      "
+    ></textarea>
+
+    <label>Límite de crédito</label>
+
+    <input
+      id="clienteLimiteCredito"
+      type="number"
+      min="0"
+      step="0.01"
+      value="0"
+      placeholder="0.00"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:12px;
+        font-size:16px;
+        margin:6px 0 10px;
+      "
+    >
+
+    <div id="bloqueClienteActivo" style="display:none;">
+
+      <label>Estado</label>
+
+      <select
+        id="clienteActivo"
+        style="
+          width:100%;
+          box-sizing:border-box;
+          padding:12px;
+          font-size:16px;
+          margin:6px 0 10px;
+        "
+      >
+        <option value="SI">Activo</option>
+        <option value="NO">Inactivo</option>
+      </select>
+
+    </div>
+
+    <button
+      class="btn-cargar"
+      onclick="guardarClienteAdmin()"
+    >
+      Guardar cliente
+    </button>
+
+    <button
+      class="btn-eliminar"
+      style="width:100%;"
+      onclick="ocultarFormularioCliente()"
+    >
+      Cancelar
+    </button>
+
+  </div>
+
+  <div id="listaClientesAdmin"></div>
+
+  <button
+    class="btn-eliminar"
+    style="width:100%;"
+    onclick="regresarAdminDesdeClientes()"
+  >
+    ⬅️ Regresar
+  </button>
+
+</div>
+
+
+
+	
 <div id="pantallaReportes" style="display:none;">
 
   <h1>📊 Reportes</h1>
@@ -616,6 +789,7 @@ const POS = {
 
   // Catálogos
   productos: [],
+	clientes: [],
 
   // Venta actual
   carrito: [],
@@ -767,6 +941,7 @@ if (!confirm("¿Deseas cerrar la sesión?")) return;
   document.getElementById("pantallaAdmin").style.display = "none";
   document.getElementById("pantallaVenta").style.display = "none";
   document.getElementById("pantallaLogin").style.display = "block";
+	document.getElementById("pantallaClientes").style.display = "none";
 
   document.getElementById("btnAdmin").style.display = "none";
 	document.getElementById("bloqueModo").style.display = "none";
@@ -2033,7 +2208,326 @@ async function cargarReporteDias(dias) {
     `;
   }
 }
-	
+// ==================================================
+// CLIENTES
+// ==================================================
+
+async function mostrarClientesAdmin() {
+  document.getElementById("pantallaAdmin").style.display = "none";
+  document.getElementById("pantallaClientes").style.display = "block";
+
+  await cargarClientes();
+
+  history.pushState(null, "", location.href);
+}
+
+
+async function cargarClientes() {
+  const contenedor =
+    document.getElementById("listaClientesAdmin");
+
+  contenedor.innerHTML = `
+    <div class="item-carrito">
+      Cargando clientes...
+    </div>
+  `;
+
+  try {
+    const respuesta = await fetch(
+      API_URL + "?action=clientes"
+    );
+
+    const data = await respuesta.json();
+
+    if (!data.ok) {
+      contenedor.innerHTML = `
+        <div class="item-carrito">
+          ${data.mensaje || "No fue posible cargar los clientes"}
+        </div>
+      `;
+      return;
+    }
+
+    POS.clientes = data.clientes || [];
+
+    renderClientesAdmin(POS.clientes);
+
+  } catch (error) {
+    contenedor.innerHTML = `
+      <div class="item-carrito">
+        Error de conexión: ${error.message}
+      </div>
+    `;
+  }
+}
+
+
+function renderClientesAdmin(lista) {
+  const contenedor =
+    document.getElementById("listaClientesAdmin");
+
+  contenedor.innerHTML = "";
+
+  if (!lista || lista.length === 0) {
+    contenedor.innerHTML = `
+      <div class="item-carrito">
+        No hay clientes registrados.
+      </div>
+    `;
+    return;
+  }
+
+  lista.forEach(cliente => {
+    const saldo = Number(cliente.saldo || 0);
+    const limite = Number(cliente.limiteCredito || 0);
+    const disponible = Math.max(0, limite - saldo);
+
+    const div = document.createElement("div");
+    div.className = "item-carrito";
+
+    div.innerHTML = `
+      <div class="item-linea">
+
+        <div style="min-width:0;">
+
+          <div class="item-nombre">
+            ${escaparHTML(cliente.nombre)}
+          </div>
+
+          <div class="item-info">
+            ID: ${escaparHTML(cliente.id)}<br>
+            Teléfono: ${escaparHTML(cliente.telefono || "Sin teléfono")}<br>
+            Crédito autorizado: $${limite.toFixed(2)}<br>
+            Saldo: $${saldo.toFixed(2)}<br>
+            Disponible: $${disponible.toFixed(2)}
+          </div>
+
+        </div>
+
+        <div class="item-importe">
+          ${cliente.activo === "SI" ? "🟢" : "🔴"}
+        </div>
+
+      </div>
+
+      <div class="item-botones">
+        <button
+          onclick="editarClienteAdmin('${escaparAtributo(cliente.id)}')"
+        >
+          ✏️ Editar
+        </button>
+      </div>
+    `;
+
+    contenedor.appendChild(div);
+  });
+}
+
+
+function filtrarClientesAdmin() {
+  const texto = document
+    .getElementById("buscadorClientes")
+    .value
+    .toLowerCase()
+    .trim();
+
+  if (texto === "") {
+    renderClientesAdmin(POS.clientes);
+    return;
+  }
+
+  const filtrados = POS.clientes.filter(cliente =>
+    String(cliente.nombre || "")
+      .toLowerCase()
+      .includes(texto) ||
+
+    String(cliente.telefono || "")
+      .toLowerCase()
+      .includes(texto) ||
+
+    String(cliente.id || "")
+      .toLowerCase()
+      .includes(texto)
+  );
+
+  renderClientesAdmin(filtrados);
+}
+
+
+function mostrarFormularioCliente() {
+  document.getElementById("formCliente").style.display = "block";
+
+  document.getElementById("clienteModo").value = "NUEVO";
+  document.getElementById("clienteId").value = "";
+
+  document.getElementById("tituloFormularioCliente").innerText =
+    "Alta de cliente";
+
+  document.getElementById("clienteNombre").value = "";
+  document.getElementById("clienteTelefono").value = "";
+  document.getElementById("clienteDireccion").value = "";
+  document.getElementById("clienteLimiteCredito").value = "0";
+  document.getElementById("clienteActivo").value = "SI";
+
+  document.getElementById("bloqueClienteActivo").style.display =
+    "none";
+
+  document.getElementById("clienteNombre").focus();
+
+  document.getElementById("formCliente").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+
+function ocultarFormularioCliente() {
+  document.getElementById("formCliente").style.display = "none";
+}
+
+
+function editarClienteAdmin(idCliente) {
+  const cliente = POS.clientes.find(
+    c => String(c.id).trim() === String(idCliente).trim()
+  );
+
+  if (!cliente) {
+    alert("Cliente no encontrado");
+    return;
+  }
+
+  document.getElementById("formCliente").style.display = "block";
+
+  document.getElementById("clienteModo").value = "EDITAR";
+  document.getElementById("clienteId").value = cliente.id;
+
+  document.getElementById("tituloFormularioCliente").innerText =
+    "Editar cliente";
+
+  document.getElementById("clienteNombre").value =
+    cliente.nombre || "";
+
+  document.getElementById("clienteTelefono").value =
+    cliente.telefono || "";
+
+  document.getElementById("clienteDireccion").value =
+    cliente.direccion || "";
+
+  document.getElementById("clienteLimiteCredito").value =
+    Number(cliente.limiteCredito || 0);
+
+  document.getElementById("clienteActivo").value =
+    cliente.activo || "SI";
+
+  document.getElementById("bloqueClienteActivo").style.display =
+    "block";
+
+  document.getElementById("formCliente").scrollIntoView({
+    behavior: "smooth",
+    block: "start"
+  });
+}
+
+
+async function guardarClienteAdmin() {
+  const modo =
+    document.getElementById("clienteModo").value;
+
+  const cliente = {
+    id: document.getElementById("clienteId").value.trim(),
+
+    nombre:
+      document.getElementById("clienteNombre").value.trim(),
+
+    telefono:
+      document.getElementById("clienteTelefono").value.trim(),
+
+    direccion:
+      document.getElementById("clienteDireccion").value.trim(),
+
+    limiteCredito: Number(
+      document.getElementById("clienteLimiteCredito").value || 0
+    ),
+
+    activo:
+      document.getElementById("clienteActivo").value
+  };
+
+  if (cliente.nombre === "") {
+    alert("Captura el nombre del cliente");
+    return;
+  }
+
+  if (cliente.limiteCredito < 0) {
+    alert("El límite de crédito no puede ser negativo");
+    return;
+  }
+
+  const accion =
+    modo === "EDITAR"
+      ? "actualizarCliente"
+      : "guardarCliente";
+
+  try {
+    const url =
+      API_URL +
+      "?action=" +
+      accion +
+      "&data=" +
+      encodeURIComponent(JSON.stringify(cliente));
+
+    const respuesta = await fetch(url);
+    const texto = await respuesta.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(texto);
+    } catch (error) {
+      alert(
+        "Apps Script no respondió JSON. Revisa la publicación de la API."
+      );
+      return;
+    }
+
+    if (!data.ok) {
+      alert(data.mensaje || "No fue posible guardar el cliente");
+      return;
+    }
+
+    alert("✅ " + data.mensaje);
+
+    ocultarFormularioCliente();
+
+    await cargarClientes();
+
+  } catch (error) {
+    alert("Error al guardar cliente: " + error.message);
+  }
+}
+
+
+function regresarAdminDesdeClientes() {
+  document.getElementById("pantallaClientes").style.display = "none";
+  document.getElementById("pantallaAdmin").style.display = "block";
+}
+
+
+function escaparHTML(valor) {
+  return String(valor || "")
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#039;");
+}
+
+
+function escaparAtributo(valor) {
+  return String(valor || "")
+    .replaceAll("\\", "\\\\")
+    .replaceAll("'", "\\'");
+}	
 // ==================================================
 // UTILIDADES
 // ==================================================
