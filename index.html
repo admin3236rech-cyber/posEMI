@@ -319,114 +319,137 @@ button {
 
 </div>
 <div id="bloquePago">
-<h2>Método de pago</h2>
 
-<select id="metodoPago"
-	onchange="cambiarMetodoPago()"
-style="width:100%; padding:14px; font-size:18px; border-radius:10px; margin-bottom:12px;">
-  <option value="EFECTIVO">Efectivo</option>
-  <option value="TARJETA">Tarjeta</option>
-  <option value="TRANSFERENCIA">Transferencia</option>
- <option value="CREDITO">Crédito</option>
-</select>
-<div id="bloqueEfectivo">
-
-  <h2>Importe recibido</h2>
-
-  <input
-    type="number"
-    id="importeRecibido"
-    placeholder="0.00"
-    oninput="calcularCambio()"
-    style="width:100%; padding:14px; font-size:18px; border-radius:10px; border:1px solid #ccc;"
-  >
-
-  <div id="cambio" style="margin-top:10px; font-size:24px; font-weight:bold; color:#0b8043;">
-    Cambio: ---
-  </div>
-<div
-  id="bloqueCredito"
-  style="
-    display:none;
-    background:white;
-    padding:14px;
-    border-radius:12px;
-    margin-bottom:14px;
-    box-shadow:0 1px 3px rgba(0,0,0,.12);
-  "
->
-
-  <h2 style="margin-top:0;">
-    Cliente de crédito
-  </h2>
+  <h2>Método de pago</h2>
 
   <select
-    id="clienteCredito"
-    onchange="mostrarDatosClienteCredito()"
+    id="metodoPago"
+    onchange="cambiarMetodoPago()"
     style="
       width:100%;
-      box-sizing:border-box;
       padding:14px;
-      font-size:17px;
+      font-size:18px;
       border-radius:10px;
       margin-bottom:12px;
     "
   >
-    <option value="">
-      Selecciona un cliente
-    </option>
+    <option value="EFECTIVO">Efectivo</option>
+    <option value="TARJETA">Tarjeta</option>
+    <option value="TRANSFERENCIA">Transferencia</option>
+    <option value="CREDITO">Crédito</option>
   </select>
 
+  <div id="bloqueEfectivo">
+
+    <h2>Importe recibido</h2>
+
+    <input
+      type="number"
+      id="importeRecibido"
+      placeholder="0.00"
+      oninput="calcularCambio()"
+      style="
+        width:100%;
+        padding:14px;
+        font-size:18px;
+        border-radius:10px;
+        border:1px solid #ccc;
+        box-sizing:border-box;
+      "
+    >
+
+    <div
+      id="cambio"
+      style="
+        margin-top:10px;
+        font-size:24px;
+        font-weight:bold;
+        color:#0b8043;
+      "
+    >
+      Cambio: ---
+    </div>
+
+  </div>
+
   <div
-    id="datosClienteCredito"
+    id="bloqueCredito"
     style="
       display:none;
-      padding:12px;
-      background:#f0fdf4;
-      border-radius:10px;
-      line-height:1.7;
-      margin-bottom:12px;
-    "
-  ></div>
-
-  <label>
-    Fecha límite de pago
-  </label>
-
-  <input
-    id="fechaLimiteCredito"
-    type="date"
-    style="
-      width:100%;
-      box-sizing:border-box;
+      background:white;
       padding:14px;
-      font-size:17px;
-      border-radius:10px;
-      border:1px solid #ccc;
-      margin:6px 0 12px;
+      border-radius:12px;
+      margin-bottom:14px;
+      box-shadow:0 1px 3px rgba(0,0,0,.12);
     "
   >
 
-  <label>
-    Observaciones
-  </label>
+    <h2 style="margin-top:0;">
+      Cliente de crédito
+    </h2>
 
-  <textarea
-    id="observacionCredito"
-    placeholder="Ej. Paga cada viernes..."
-    style="
-      width:100%;
-      box-sizing:border-box;
-      padding:14px;
-      font-size:16px;
-      border-radius:10px;
-      border:1px solid #ccc;
-      min-height:80px;
-    "
-  ></textarea>
+    <select
+      id="clienteCredito"
+      onchange="mostrarDatosClienteCredito()"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:14px;
+        font-size:17px;
+        border-radius:10px;
+        margin-bottom:12px;
+      "
+    >
+      <option value="">
+        Selecciona un cliente
+      </option>
+    </select>
 
-</div>
-</div>
+    <div
+      id="datosClienteCredito"
+      style="
+        display:none;
+        padding:12px;
+        background:#f0fdf4;
+        border-radius:10px;
+        line-height:1.7;
+        margin-bottom:12px;
+      "
+    ></div>
+
+    <label>Fecha límite de pago</label>
+
+    <input
+      id="fechaLimiteCredito"
+      type="date"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:14px;
+        font-size:17px;
+        border-radius:10px;
+        border:1px solid #ccc;
+        margin:6px 0 12px;
+      "
+    >
+
+    <label>Observaciones</label>
+
+    <textarea
+      id="observacionCredito"
+      placeholder="Ej. Paga cada viernes..."
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:14px;
+        font-size:16px;
+        border-radius:10px;
+        border:1px solid #ccc;
+        min-height:80px;
+      "
+    ></textarea>
+
+  </div>
 </div>
 	
  <button id="btnCobrar" class="btn-cobrar" onclick="cobrar()">Cobrar</button>
@@ -1665,6 +1688,7 @@ if (
 ) {
   mostrarDatosClienteCredito();
 }
+}
 function actualizarCantidadCompra(codigo, valor) {
   const item = POS.carrito.find(i => i.codigo === codigo);
   if (!item) return;
@@ -1825,66 +1849,41 @@ async function cobrar() {
 }
 async function guardarVenta() {
 
-  const btnCobrar = document.getElementById("btnCobrar");
-
   const total = POS.carrito.reduce(
-    (suma, item) => suma + (item.cantidad * item.precio),
+    (suma, item) =>
+      suma +
+      Number(item.cantidad || 0) *
+      Number(item.precio || 0),
     0
   );
 
-  const metodoPago = document.getElementById("metodoPago").value;
-const idCliente =
-  document.getElementById("clienteCredito").value;
+  const metodoPago =
+    document.getElementById("metodoPago").value;
 
-const fechaLimiteCredito =
-  document.getElementById("fechaLimiteCredito").value;
-
-const observacionCredito =
-  document.getElementById("observacionCredito").value.trim();
   const textoRecibido =
     document.getElementById("importeRecibido").value.trim();
 
-  const recibido = Number(textoRecibido || 0);
+  const recibido =
+    Number(textoRecibido || 0);
+
+  const idCliente =
+    document.getElementById("clienteCredito").value;
+
+  const fechaLimiteCredito =
+    document.getElementById("fechaLimiteCredito").value;
+
+  const observacionCredito =
+    document
+      .getElementById("observacionCredito")
+      .value
+      .trim();
+
+  // ==============================================
+  // VALIDACIÓN EFECTIVO
+  // ==============================================
 
   if (metodoPago === "EFECTIVO") {
-if (metodoPago === "CREDITO") {
-  if (idCliente === "") {
-    alert("Selecciona el cliente de crédito");
-    return;
-  }
 
-  const cliente = POS.clientes.find(
-    c => String(c.id) === String(idCliente)
-  );
-
-  if (!cliente) {
-    alert("El cliente seleccionado no es válido");
-    return;
-  }
-
-  const limite =
-    Number(cliente.limiteCredito || 0);
-
-  const saldo =
-    Number(cliente.saldo || 0);
-
-  const disponible =
-    limite - saldo;
-
-  if (total > disponible) {
-    alert(
-      "Crédito insuficiente.\n" +
-      "Disponible: $" +
-      Math.max(0, disponible).toFixed(2)
-    );
-    return;
-  }
-
-  if (fechaLimiteCredito === "") {
-    alert("Captura la fecha límite de pago");
-    return;
-  }
-}
     if (textoRecibido === "") {
       alert("Ingresa el importe recibido");
       return;
@@ -1896,53 +1895,122 @@ if (metodoPago === "CREDITO") {
     }
 
   }
-const venta = {
-  folio: "V-" + new Date().getTime(),
-  usuario: POS.usuario,
-  total: total,
-  metodoPago: metodoPago,
 
-  idCliente:
-    metodoPago === "CREDITO"
-      ? idCliente
-      : "",
+  // ==============================================
+  // VALIDACIÓN CRÉDITO
+  // ==============================================
 
-  fechaLimiteCredito:
-    metodoPago === "CREDITO"
-      ? fechaLimiteCredito
-      : "",
+  if (metodoPago === "CREDITO") {
 
-  observacionCredito:
-    metodoPago === "CREDITO"
-      ? observacionCredito
-      : "",
+    if (idCliente === "") {
+      alert("Selecciona el cliente de crédito");
+      return;
+    }
 
-  items: POS.carrito
-};
+    const cliente = POS.clientes.find(
+      c => String(c.id) === String(idCliente)
+    );
 
+    if (!cliente) {
+      alert("El cliente seleccionado no es válido");
+      return;
+    }
 
-  const url =
-    API_URL +
-    "?action=guardarVenta&data=" +
-    encodeURIComponent(JSON.stringify(venta));
+    const limite =
+      Number(cliente.limiteCredito || 0);
 
-  const respuesta = await fetch(url);
-  const texto = await respuesta.text();
+    const saldo =
+      Number(cliente.saldo || 0);
 
-  let data;
+    const disponible =
+      limite - saldo;
 
-  try {
-    data = JSON.parse(texto);
-  } catch (e) {
-    alert("Apps Script no respondió JSON.\nRevisa si la venta se guardó antes de cobrar nuevamente.");
-    return;
+    if (total > disponible) {
+      alert(
+        "Crédito insuficiente.\n" +
+        "Disponible: $" +
+        Math.max(0, disponible).toFixed(2)
+      );
+      return;
+    }
+
+    if (fechaLimiteCredito === "") {
+      alert("Captura la fecha límite de pago");
+      return;
+    }
+
   }
 
-  if (data.ok) {
-    alert("Venta guardada correctamente");
+  const venta = {
+    folio: "V-" + Date.now(),
+    usuario: POS.usuario,
+    total: total,
+    metodoPago: metodoPago,
+
+    idCliente:
+      metodoPago === "CREDITO"
+        ? idCliente
+        : "",
+
+    fechaLimiteCredito:
+      metodoPago === "CREDITO"
+        ? fechaLimiteCredito
+        : "",
+
+    observacionCredito:
+      metodoPago === "CREDITO"
+        ? observacionCredito
+        : "",
+
+    items: POS.carrito
+  };
+
+  try {
+
+    const url =
+      API_URL +
+      "?action=guardarVenta&data=" +
+      encodeURIComponent(
+        JSON.stringify(venta)
+      );
+
+    const respuesta =
+      await fetch(url);
+
+    const texto =
+      await respuesta.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(texto);
+    } catch (error) {
+      alert(
+        "Apps Script no respondió JSON.\n" +
+        "Revisa si la venta se guardó antes de intentar nuevamente."
+      );
+      return;
+    }
+
+    if (!data.ok) {
+      alert(
+        "Error: " +
+        (data.mensaje || "No fue posible guardar la venta")
+      );
+      return;
+    }
+
+    alert("✅ " + data.mensaje);
+
     limpiarOperacion();
-  } else {
-    alert("Error: " + data.mensaje);
+
+    await cargarProductos();
+
+  } catch (error) {
+    alert(
+      "Error de conexión: " +
+      error.message
+    );
   }
 
 }
