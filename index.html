@@ -508,6 +508,13 @@ button {
   style="background:#b91c1c;"
   onclick="cerrarSesion()"
 >
+<button
+  class="btn-cargar"
+  onclick="mostrarCuentasPorCobrar()"
+  style="background:#7c3aed;"
+>
+  💰 Cuentas por cobrar
+</button>
   🚪 Cerrar sesión
 </button>
   <button
@@ -772,7 +779,130 @@ button {
   </button>
 
 </div>
+<div
+  id="pantallaCuentasPorCobrar"
+  style="display:none;"
+>
 
+  <h1>💰 Cuentas por cobrar</h1>
+
+  <div
+    style="
+      display:grid;
+      grid-template-columns:repeat(2,1fr);
+      gap:10px;
+      margin-bottom:14px;
+    "
+  >
+
+    <div class="item-carrito">
+      <div style="font-size:13px;color:#666;">
+        Saldo pendiente
+      </div>
+
+      <div
+        id="cxpSaldoTotal"
+        style="
+          font-size:22px;
+          font-weight:bold;
+          color:#b91c1c;
+        "
+      >
+        $0.00
+      </div>
+    </div>
+
+    <div class="item-carrito">
+      <div style="font-size:13px;color:#666;">
+        Cuentas pendientes
+      </div>
+
+      <div
+        id="cxpPendientes"
+        style="
+          font-size:22px;
+          font-weight:bold;
+        "
+      >
+        0
+      </div>
+    </div>
+
+    <div class="item-carrito">
+      <div style="font-size:13px;color:#666;">
+        Cuentas vencidas
+      </div>
+
+      <div
+        id="cxpVencidas"
+        style="
+          font-size:22px;
+          font-weight:bold;
+          color:#dc2626;
+        "
+      >
+        0
+      </div>
+    </div>
+
+  </div>
+
+  <input
+    id="buscadorCuentas"
+    type="text"
+    placeholder="Buscar cliente, folio o cuenta..."
+    oninput="filtrarCuentasPorCobrar()"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:14px;
+      font-size:17px;
+      border-radius:10px;
+      border:1px solid #ccc;
+      margin-bottom:12px;
+    "
+  >
+
+  <select
+    id="filtroEstadoCuentas"
+    onchange="filtrarCuentasPorCobrar()"
+    style="
+      width:100%;
+      box-sizing:border-box;
+      padding:14px;
+      font-size:17px;
+      border-radius:10px;
+      margin-bottom:12px;
+    "
+  >
+    <option value="PENDIENTES">
+      Pendientes y vencidas
+    </option>
+
+    <option value="TODAS">
+      Todas
+    </option>
+
+    <option value="LIQUIDADO">
+      Liquidadas
+    </option>
+
+    <option value="VENCIDO">
+      Vencidas
+    </option>
+  </select>
+
+  <div id="listaCuentasPorCobrar"></div>
+
+  <button
+    class="btn-eliminar"
+    style="width:100%;"
+    onclick="regresarAdminDesdeCuentas()"
+  >
+    ⬅️ Regresar
+  </button>
+
+</div>
 
 
 	
@@ -896,6 +1026,7 @@ const POS = {
   // Catálogos
   productos: [],
 	clientes: [],
+	cuentasPorCobrar: [],
 
   // Venta actual
   carrito: [],
@@ -1048,6 +1179,13 @@ if (!confirm("¿Deseas cerrar la sesión?")) return;
   document.getElementById("pantallaVenta").style.display = "none";
   document.getElementById("pantallaLogin").style.display = "block";
 	document.getElementById("pantallaClientes").style.display = "none";
+	document.getElementById(
+  "pantallaCuentasPorCobrar"
+).style.display = "none";
+
+document.getElementById(
+  "modalAbono"
+).style.display = "none";
 
   document.getElementById("btnAdmin").style.display = "none";
 	document.getElementById("bloqueModo").style.display = "none";
@@ -2928,6 +3066,523 @@ function establecerFechaLimiteCredito() {
     anio + "-" + mes + "-" + dia;
 }
 // ==================================================
+// CUENTAS POR COBRAR Y ABONOS
+// ==================================================
+
+async function mostrarCuentasPorCobrar() {
+  document.getElementById(
+    "pantallaAdmin"
+  ).style.display = "none";
+
+  document.getElementById(
+    "pantallaCuentasPorCobrar"
+  ).style.display = "block";
+
+  await cargarCuentasPorCobrar();
+
+  history.pushState(null, "", location.href);
+}
+
+
+async function cargarCuentasPorCobrar() {
+  const contenedor =
+    document.getElementById(
+      "listaCuentasPorCobrar"
+    );
+
+  contenedor.innerHTML = `
+    <div class="item-carrito">
+      Cargando cuentas...
+    </div>
+  `;
+
+  try {
+    const respuesta = await fetch(
+      API_URL + "?action=cuentasPorCobrar"
+    );
+
+    const data = await respuesta.json();
+
+    if (!data.ok) {
+      contenedor.innerHTML = `
+        <div class="item-carrito">
+          ${
+            data.mensaje ||
+            "No fue posible cargar las cuentas"
+          }
+        </div>
+      `;
+      return;
+    }
+
+    POS.cuentasPorCobrar =
+      data.cuentas || [];
+
+    const resumen =
+      data.resumen || {};
+
+    document.getElementById(
+      "cxpSaldoTotal"
+    ).innerText =
+      "$" +
+      Number(
+        resumen.saldoTotal || 0
+      ).toFixed(2);
+
+    document.getElementById(
+      "cxpPendientes"
+    ).innerText =
+      Number(
+        resumen.cuentasPendientes || 0
+      );
+
+    document.getElementById(
+      "cxpVencidas"
+    ).innerText =
+      Number(
+        resumen.cuentasVencidas || 0
+      );
+
+    filtrarCuentasPorCobrar();
+
+  } catch (error) {
+    contenedor.innerHTML = `
+      <div class="item-carrito">
+        Error de conexión:
+        ${escaparHTML(error.message)}
+      </div>
+    `;
+  }
+}
+
+
+function filtrarCuentasPorCobrar() {
+  const texto = document
+    .getElementById("buscadorCuentas")
+    .value
+    .toLowerCase()
+    .trim();
+
+  const filtro = document
+    .getElementById("filtroEstadoCuentas")
+    .value;
+
+  let cuentas =
+    [...POS.cuentasPorCobrar];
+
+  if (filtro === "PENDIENTES") {
+    cuentas = cuentas.filter(
+      cuenta => Number(cuenta.saldo || 0) > 0
+    );
+  }
+
+  if (filtro === "LIQUIDADO") {
+    cuentas = cuentas.filter(
+      cuenta => cuenta.estado === "LIQUIDADO"
+    );
+  }
+
+  if (filtro === "VENCIDO") {
+    cuentas = cuentas.filter(
+      cuenta => cuenta.vencida === true
+    );
+  }
+
+  if (texto !== "") {
+    cuentas = cuentas.filter(cuenta =>
+      String(cuenta.cliente || "")
+        .toLowerCase()
+        .includes(texto) ||
+
+      String(cuenta.folioVenta || "")
+        .toLowerCase()
+        .includes(texto) ||
+
+      String(cuenta.idCuenta || "")
+        .toLowerCase()
+        .includes(texto)
+    );
+  }
+
+  renderCuentasPorCobrar(cuentas);
+}
+
+
+function renderCuentasPorCobrar(cuentas) {
+  const contenedor =
+    document.getElementById(
+      "listaCuentasPorCobrar"
+    );
+
+  contenedor.innerHTML = "";
+
+  if (!cuentas || cuentas.length === 0) {
+    contenedor.innerHTML = `
+      <div class="item-carrito">
+        No hay cuentas para mostrar.
+      </div>
+    `;
+    return;
+  }
+
+  cuentas.forEach(cuenta => {
+    const saldo =
+      Number(cuenta.saldo || 0);
+
+    const importeOriginal =
+      Number(cuenta.importeOriginal || 0);
+
+    let icono = "🟡";
+    let colorEstado = "#d97706";
+
+    if (cuenta.estado === "LIQUIDADO") {
+      icono = "🟢";
+      colorEstado = "#15803d";
+    } else if (cuenta.vencida) {
+      icono = "🔴";
+      colorEstado = "#dc2626";
+    }
+
+    const fechaLimite =
+      formatearFechaCorta(
+        cuenta.fechaLimite
+      );
+
+    const div =
+      document.createElement("div");
+
+    div.className = "item-carrito";
+
+    div.innerHTML = `
+      <div class="item-linea">
+
+        <div style="min-width:0;">
+
+          <div class="item-nombre">
+            ${escaparHTML(cuenta.cliente)}
+          </div>
+
+          <div class="item-info">
+            Venta:
+            ${escaparHTML(cuenta.folioVenta)}
+            <br>
+
+            Importe original:
+            $${importeOriginal.toFixed(2)}
+            <br>
+
+            Fecha límite:
+            ${escaparHTML(fechaLimite || "Sin fecha")}
+            <br>
+
+            Cuenta:
+            ${escaparHTML(cuenta.idCuenta)}
+          </div>
+
+        </div>
+
+        <div
+          style="
+            font-weight:bold;
+            color:${colorEstado};
+            text-align:right;
+          "
+        >
+          ${icono}
+          ${escaparHTML(cuenta.estado)}
+          <br>
+
+          <span style="font-size:20px;">
+            $${saldo.toFixed(2)}
+          </span>
+        </div>
+
+      </div>
+
+      ${
+        saldo > 0
+          ? `
+            <button
+              onclick="abrirModalAbono(
+                '${escaparAtributo(cuenta.idCuenta)}'
+              )"
+            >
+              💵 Registrar abono
+            </button>
+          `
+          : `
+            <div
+              style="
+                margin-top:10px;
+                padding:8px;
+                background:#dcfce7;
+                color:#166534;
+                border-radius:8px;
+                font-weight:bold;
+                text-align:center;
+              "
+            >
+              Cuenta liquidada
+            </div>
+          `
+      }
+    `;
+
+    contenedor.appendChild(div);
+  });
+}
+
+
+function abrirModalAbono(idCuenta) {
+  const cuenta =
+    POS.cuentasPorCobrar.find(
+      c =>
+        String(c.idCuenta) ===
+        String(idCuenta)
+    );
+
+  if (!cuenta) {
+    alert("Cuenta no encontrada");
+    return;
+  }
+
+  const saldo =
+    Number(cuenta.saldo || 0);
+
+  if (saldo <= 0) {
+    alert("La cuenta ya está liquidada");
+    return;
+  }
+
+  document.getElementById(
+    "abonoIdCuenta"
+  ).value = cuenta.idCuenta;
+
+  document.getElementById(
+    "abonoImporte"
+  ).value = "";
+
+  document.getElementById(
+    "abonoImporte"
+  ).max = saldo;
+
+  document.getElementById(
+    "abonoMetodoPago"
+  ).value = "EFECTIVO";
+
+  document.getElementById(
+    "abonoObservaciones"
+  ).value = "";
+
+  document.getElementById(
+    "abonoDatosCuenta"
+  ).innerHTML = `
+    <strong>
+      ${escaparHTML(cuenta.cliente)}
+    </strong>
+    <br>
+
+    Venta:
+    ${escaparHTML(cuenta.folioVenta)}
+    <br>
+
+    Saldo pendiente:
+    <strong>$${saldo.toFixed(2)}</strong>
+  `;
+
+  document.getElementById(
+    "modalAbono"
+  ).style.display = "block";
+
+  document.getElementById(
+    "abonoImporte"
+  ).focus();
+}
+
+
+function cerrarModalAbono() {
+  document.getElementById(
+    "modalAbono"
+  ).style.display = "none";
+}
+
+
+async function guardarAbonoFrontend() {
+  const boton =
+    document.getElementById(
+      "btnGuardarAbono"
+    );
+
+  if (boton.disabled) return;
+
+  const idCuenta =
+    document.getElementById(
+      "abonoIdCuenta"
+    ).value;
+
+  const importe =
+    Number(
+      document.getElementById(
+        "abonoImporte"
+      ).value || 0
+    );
+
+  const metodoPago =
+    document.getElementById(
+      "abonoMetodoPago"
+    ).value;
+
+  const observaciones =
+    document.getElementById(
+      "abonoObservaciones"
+    ).value.trim();
+
+  const cuenta =
+    POS.cuentasPorCobrar.find(
+      c =>
+        String(c.idCuenta) ===
+        String(idCuenta)
+    );
+
+  if (!cuenta) {
+    alert("Cuenta no encontrada");
+    return;
+  }
+
+  const saldo =
+    Number(cuenta.saldo || 0);
+
+  if (importe <= 0) {
+    alert(
+      "Captura un importe mayor que cero"
+    );
+    return;
+  }
+
+  if (importe > saldo) {
+    alert(
+      "El abono no puede superar el saldo de $" +
+      saldo.toFixed(2)
+    );
+    return;
+  }
+
+  const abono = {
+    idCuenta: idCuenta,
+    importe: importe,
+    metodoPago: metodoPago,
+    usuario: POS.usuario,
+    observaciones: observaciones
+  };
+
+  boton.disabled = true;
+  boton.innerText = "Guardando...";
+
+  try {
+    const url =
+      API_URL +
+      "?action=guardarAbono&data=" +
+      encodeURIComponent(
+        JSON.stringify(abono)
+      );
+
+    const respuesta =
+      await fetch(url);
+
+    const texto =
+      await respuesta.text();
+
+    let data;
+
+    try {
+      data = JSON.parse(texto);
+    } catch (error) {
+      alert(
+        "Apps Script no respondió JSON. " +
+        "Revisa si el abono se guardó antes de intentarlo otra vez."
+      );
+      return;
+    }
+
+    if (!data.ok) {
+      alert(
+        data.mensaje ||
+        "No fue posible registrar el abono"
+      );
+      return;
+    }
+
+    alert("✅ " + data.mensaje);
+
+    cerrarModalAbono();
+
+    await cargarCuentasPorCobrar();
+
+    // Refresca clientes para mostrar su nuevo saldo.
+    try {
+      const respuestaClientes =
+        await fetch(
+          API_URL + "?action=clientes"
+        );
+
+      const dataClientes =
+        await respuestaClientes.json();
+
+      if (dataClientes.ok) {
+        POS.clientes =
+          dataClientes.clientes || [];
+      }
+    } catch (error) {
+      console.warn(
+        "No fue posible actualizar clientes",
+        error
+      );
+    }
+
+  } catch (error) {
+    alert(
+      "Error de conexión: " +
+      error.message
+    );
+
+  } finally {
+    boton.disabled = false;
+    boton.innerText = "Guardar abono";
+  }
+}
+
+
+function regresarAdminDesdeCuentas() {
+  document.getElementById(
+    "pantallaCuentasPorCobrar"
+  ).style.display = "none";
+
+  document.getElementById(
+    "pantallaAdmin"
+  ).style.display = "block";
+}
+
+
+function formatearFechaCorta(valor) {
+  if (!valor) return "";
+
+  const fecha = new Date(valor);
+
+  if (isNaN(fecha.getTime())) {
+    return String(valor);
+  }
+
+  return fecha.toLocaleDateString(
+    "es-MX",
+    {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    }
+  );
+}
+
+// ==================================================
 // UTILIDADES
 // ==================================================
 	
@@ -3270,6 +3925,117 @@ window.addEventListener("load", cargarSesion);
       class="btn-eliminar"
       style="width:100%;"
       onclick="cerrarModalGranel()"
+    >
+      Cancelar
+    </button>
+
+  </div>
+
+</div>
+<div
+  id="modalAbono"
+  style="
+    display:none;
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,.6);
+    z-index:9999;
+    padding:16px;
+    overflow:auto;
+  "
+>
+
+  <div
+    style="
+      max-width:480px;
+      margin:40px auto;
+      background:white;
+      padding:18px;
+      border-radius:16px;
+    "
+  >
+
+    <h2>Registrar abono</h2>
+
+    <input
+      id="abonoIdCuenta"
+      type="hidden"
+    >
+
+    <div
+      id="abonoDatosCuenta"
+      style="
+        background:#f3f4f6;
+        padding:12px;
+        border-radius:10px;
+        margin-bottom:14px;
+        line-height:1.7;
+      "
+    ></div>
+
+    <label>Importe del abono</label>
+
+    <input
+      id="abonoImporte"
+      type="number"
+      min="0.01"
+      step="0.01"
+      placeholder="0.00"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:14px;
+        font-size:18px;
+        margin:6px 0 12px;
+      "
+    >
+
+    <label>Método de pago</label>
+
+    <select
+      id="abonoMetodoPago"
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:14px;
+        font-size:17px;
+        margin:6px 0 12px;
+      "
+    >
+      <option value="EFECTIVO">Efectivo</option>
+      <option value="TARJETA">Tarjeta</option>
+      <option value="TRANSFERENCIA">
+        Transferencia
+      </option>
+    </select>
+
+    <label>Observaciones</label>
+
+    <textarea
+      id="abonoObservaciones"
+      placeholder="Ej. Pago parcial..."
+      style="
+        width:100%;
+        box-sizing:border-box;
+        padding:14px;
+        font-size:16px;
+        min-height:80px;
+        margin:6px 0 12px;
+      "
+    ></textarea>
+
+    <button
+      id="btnGuardarAbono"
+      class="btn-cargar"
+      onclick="guardarAbonoFrontend()"
+    >
+      Guardar abono
+    </button>
+
+    <button
+      class="btn-eliminar"
+      style="width:100%;"
+      onclick="cerrarModalAbono()"
     >
       Cancelar
     </button>
