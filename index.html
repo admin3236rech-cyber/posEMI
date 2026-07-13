@@ -264,8 +264,27 @@ button {
 .btn-escaner-compacto.activo {
   background:#d93025;
 }
+/* =========================================
+   ESTADO DE CONEXIÓN
+========================================= */
+.estado-conexion {
+  display:inline-block;
+  margin-top:4px;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:11px;
+  font-weight:bold;
+}
 
+.estado-conexion.online {
+  background:#dcfce7;
+  color:#166534;
+}
 
+.estado-conexion.offline {
+  background:#fee2e2;
+  color:#b91c1c;
+}
 /* =========================================
    CARRITO VACÍO
 ========================================= */
@@ -339,10 +358,17 @@ button {
 <div class="encabezado-pos">
 
   <div>
-    <div class="titulo-pos">
-      EMI POS
-    </div>
 
+<div class="titulo-pos">
+  EMI POS
+</div>
+
+<div
+  id="estadoConexion"
+  class="estado-conexion online"
+>
+  ● Online
+</div>
     <div
       id="modoActual"
       class="modo-compacto"
@@ -1618,31 +1644,124 @@ alert(JSON.stringify(data));
   renderProductosAdmin(POS.productos);
 }
 async function cargarProductos() {
-  const estado = document.getElementById("estado");
+  const estado =
+    document.getElementById("estado");
 
-  estado.innerText = "Cargando productos...";
+  estado.innerText =
+    "Cargando productos...";
 
   try {
-    const respuesta = await fetch(API_URL + "?action=productos");
-    const data = await respuesta.json();
+    const respuesta = await fetch(
+      API_URL + "?action=productos",
+      {
+        cache: "no-store"
+      }
+    );
+
+    if (!respuesta.ok) {
+      throw new Error(
+        "Respuesta HTTP " + respuesta.status
+      );
+    }
+
+    const data =
+      await respuesta.json();
 
     if (!data.ok) {
-      estado.innerText = "Error al cargar productos";
+      throw new Error(
+        data.mensaje ||
+        "La API no devolvió los productos"
+      );
+    }
+
+    POS.productos =
+      data.productos || [];
+
+    localStorage.setItem(
+      "POS_PRODUCTOS_OFFLINE",
+      JSON.stringify(POS.productos)
+    );
+
+    localStorage.setItem(
+      "POS_PRODUCTOS_FECHA",
+      new Date().toISOString()
+    );
+
+    estado.innerText =
+      "Productos cargados: " +
+      POS.productos.length;
+
+    if (
+      document.getElementById(
+        "pantallaProductos"
+      ).style.display === "block"
+    ) {
+      renderProductosAdmin(
+        POS.productos
+      );
+    }
+
+    actualizarEstadoConexion();
+
+  } catch (error) {
+    const productosGuardados =
+      localStorage.getItem(
+        "POS_PRODUCTOS_OFFLINE"
+      );
+
+    if (!productosGuardados) {
+      POS.productos = [];
+
+      estado.innerText =
+        "Sin conexión y sin catálogo guardado";
+
+      actualizarEstadoConexion();
+
+      mostrarMensaje(
+        "❌ No hay conexión y todavía no existe un catálogo offline.",
+        "error"
+      );
+
       return;
     }
 
-    POS.productos = data.productos;
-    estado.innerText = "Productos cargados: " + POS.productos.length;
+    try {
+      POS.productos =
+        JSON.parse(productosGuardados);
 
-	if (document.getElementById("pantallaProductos").style.display === "block") {
-  renderProductosAdmin(POS.productos);
-}
+      estado.innerText =
+        "Modo offline · Productos: " +
+        POS.productos.length;
 
-  } catch (error) {
-    estado.innerText = "Error de conexión: " + error.message;
+      actualizarEstadoConexion();
+
+      mostrarMensaje(
+        "📴 Sin conexión. Usando catálogo guardado."
+      );
+
+      if (
+        document.getElementById(
+          "pantallaProductos"
+        ).style.display === "block"
+      ) {
+        renderProductosAdmin(
+          POS.productos
+        );
+      }
+
+    } catch (errorLocal) {
+      POS.productos = [];
+
+      estado.innerText =
+        "El catálogo offline está dañado";
+
+      mostrarMensaje(
+        "❌ No fue posible leer el catálogo offline.",
+        "error"
+      );
+    }
   }
 }
-
 function filtrarProductos() {
 
   const texto = document
@@ -1761,7 +1880,70 @@ function editarProductoAdmin(codigo) {
   block: "start"
 });
 }
+//
+//OFFLINE
+//
+function actualizarEstadoConexion() {
+  const indicador =
+    document.getElementById(
+      "estadoConexion"
+    );
 
+  if (!indicador) return;
+
+  if (navigator.onLine) {
+    indicador.innerText =
+      "● Online";
+
+    indicador.classList.remove(
+      "offline"
+    );
+
+    indicador.classList.add(
+      "online"
+    );
+
+  } else {
+    indicador.innerText =
+      "● Offline";
+
+    indicador.classList.remove(
+      "online"
+    );
+
+    indicador.classList.add(
+      "offline"
+    );
+  }
+}
+
+
+window.addEventListener(
+  "online",
+  () => {
+    actualizarEstadoConexion();
+
+    mostrarMensaje(
+      "🌐 Conexión restablecida"
+    );
+
+    cargarProductos();
+  }
+);
+
+
+window.addEventListener(
+  "offline",
+  () => {
+    actualizarEstadoConexion();
+
+    mostrarMensaje(
+      "📴 Sin conexión. Trabajando con datos locales.",
+      "error"
+    );
+  }
+);
+	
 // ==================================================
 // CARRITO
 // ==================================================
@@ -4048,7 +4230,11 @@ window.addEventListener("popstate", manejarAtrasApp);
 
 history.pushState(null, "", location.href);
 	
-window.addEventListener("load", cargarSesion);	
+window.addEventListener("load", cargarSesion);
+	window.addEventListener(
+  "load",
+  actualizarEstadoConexion
+);
 
 </script>
 <div
@@ -4274,5 +4460,24 @@ window.addEventListener("load", cargarSesion);
   </div>
 
 </div>
+<script>
+  if ("serviceWorker" in navigator) {
+    window.addEventListener("load", async () => {
+      try {
+        const registro = await navigator.serviceWorker.register("./sw.js");
+
+        console.log(
+          "Service Worker registrado:",
+          registro.scope
+        );
+      } catch (error) {
+        console.error(
+          "No fue posible registrar el Service Worker:",
+          error
+        );
+      }
+    });
+  }
+</script>
 </body>
 </html>
