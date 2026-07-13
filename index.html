@@ -135,13 +135,193 @@ button {
   font-weight:bold;
   margin-top:12px;
 }
+
+/* =========================================
+   LOGIN
+========================================= */
+
+.login-pos {
+  max-width:420px;
+  margin:40px auto 0;
+  text-align:center;
+}
+
+.login-logo {
+  width:150px;
+  height:150px;
+  margin:0 auto 16px;
+  background:#064e2f;
+  border-radius:28px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  box-shadow:0 10px 30px rgba(6,78,47,.22);
+}
+
+.login-logo img {
+  max-width:120px;
+  max-height:120px;
+}
+
+.login-pos h1 {
+  margin:0;
+  color:#064e2f;
+  font-size:30px;
+}
+
+.login-subtitulo {
+  color:#6b7280;
+  font-size:16px;
+  margin:6px 0 24px;
+}
+
+
+/* =========================================
+   ENCABEZADO COMPACTO
+========================================= */
+
+.encabezado-pos {
+  background:#064e2f;
+  color:white;
+  padding:12px 14px;
+  border-radius:16px;
+  margin-bottom:12px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+  box-shadow:0 4px 14px rgba(6,78,47,.18);
+}
+
+.titulo-pos {
+  font-size:21px;
+  font-weight:800;
+  letter-spacing:.3px;
+}
+
+.modo-compacto {
+  display:inline-block;
+  margin-top:4px;
+  padding:4px 8px;
+  border-radius:999px;
+  background:#16a34a;
+  color:white;
+  font-size:12px;
+  font-weight:bold;
+}
+
+.usuario-compacto {
+  display:flex;
+  align-items:center;
+  gap:8px;
+  text-align:right;
+  font-size:13px;
+  color:#fff3d1;
+}
+
+
+/* =========================================
+   BUSCADOR + ESCÁNER
+========================================= */
+
+.barra-busqueda {
+  display:grid;
+  grid-template-columns:1fr 52px;
+  gap:8px;
+  align-items:stretch;
+  margin-bottom:12px;
+}
+
+.barra-busqueda input {
+  width:100%;
+  box-sizing:border-box;
+  padding:14px;
+  font-size:17px;
+  border-radius:12px;
+  border:1px solid #d1d5db;
+  background:white;
+  outline:none;
+}
+
+.barra-busqueda input:focus {
+  border-color:#0b8043;
+  box-shadow:0 0 0 3px rgba(11,128,67,.12);
+}
+
+.btn-escaner-compacto {
+  width:52px;
+  height:52px;
+  margin:0;
+  padding:0;
+  border-radius:12px;
+  background:#0b8043;
+  font-size:22px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.btn-escaner-compacto.activo {
+  background:#d93025;
+}
+
+
+/* =========================================
+   CARRITO VACÍO
+========================================= */
+
+.carrito-vacio {
+  background:white;
+  padding:30px 16px;
+  border-radius:14px;
+  text-align:center;
+  color:#6b7280;
+  box-shadow:0 1px 3px rgba(0,0,0,.10);
+  margin-bottom:10px;
+}
+
+.carrito-vacio-icono {
+  font-size:42px;
+  margin-bottom:8px;
+}
+
+.carrito-vacio-titulo {
+  color:#374151;
+  font-size:18px;
+  font-weight:bold;
+  margin-bottom:4px;
+}
+
+
+/* =========================================
+   BOTÓN COBRAR
+========================================= */
+
+.btn-cobrar {
+  background:#064e2f;
+  width:100%;
+  min-height:60px;
+  font-size:21px;
+  font-weight:800;
+  border-radius:16px;
+  box-shadow:0 6px 16px rgba(6,78,47,.22);
+}
   </style>
 </head>
 
 <body>
 
-<div id="pantallaLogin">
-  <h1>Login</h1>
+<div id="pantallaLogin" class="login-pos">
+
+  <div class="login-logo">
+    <img src="logo-emi.png" alt="Abarrotes EMI">
+  </div>
+
+  <h1>EMI POS</h1>
+
+  <div class="login-subtitulo">
+    Punto de Venta
+  </div>
 
   <input
     id="pin"
@@ -156,78 +336,61 @@ button {
 
 <div id="pantallaVenta" style="display:none;">
   
-<div class="logo-pos" id="logoPOS">
-  <img src="logo-emi.png" alt="Abarrotes EMI">
-  <div class="barra-usuario">
-  <div class="usuario-pos" id="usuarioPantalla">Usuario</div>
+<div class="encabezado-pos">
+
+  <div>
+    <div class="titulo-pos">
+      EMI POS
+    </div>
+
+    <div
+      id="modoActual"
+      class="modo-compacto"
+    >
+      🟢 VENTA
+    </div>
+  </div>
+
+  <div class="usuario-compacto">
+
+    <div id="usuarioPantalla">
+      Usuario
+    </div>
+
+    <button
+      class="btn-salir-mini"
+      onclick="cerrarSesion()"
+      title="Cerrar sesión"
+    >
+      🚪
+    </button>
+
+  </div>
+
+</div>
+
+
+<div id="estado" style="display:none;">Esperando...</div>
+
+<div class="barra-busqueda">
+
+  <input
+    type="text"
+    id="buscador"
+    placeholder="Buscar producto o código..."
+    onkeyup="filtrarProductos()"
+  >
 
   <button
-    class="btn-salir-mini"
-    onclick="cerrarSesion()"
-    title="Cerrar sesión"
+    id="btnEscanerCompacto"
+    class="btn-escaner-compacto"
+    onclick="alternarEscaner()"
+    title="Escanear código"
   >
-    🚪 Salir
+    📷
   </button>
-</div>
-<div
-    id="modoActual"
-    style="
-        margin-top:10px;
-        padding:10px;
-        border-radius:12px;
-        background:#16a34a;
-        color:white;
-        font-size:18px;
-        font-weight:bold;
-        text-align:center;
-    "
->
-    🟢 VENTA
-</div>
-	
-</div>
 
-  <button class="btn-cargar" onclick="cargarProductos()">Cargar productos</button>
-
-  <div id="estado">Esperando...</div>
-
-<input
-  type="text"
-  id="buscador"
-  placeholder="Buscar producto o código..."
-  onkeyup="filtrarProductos()"
-  style="
-    width:100%;
-    padding:14px;
-    font-size:18px;
-    border-radius:10px;
-    border:1px solid #ccc;
-    margin-bottom:12px;
-  "
->
-	<div
-  id="sugerencias"
-  style="
-    display:none;
-    background:white;
-    border:1px solid #ddd;
-    border-radius:10px;
-    overflow:hidden;
-    margin-top:-8px;
-    margin-bottom:12px;
-    box-shadow:0 2px 8px rgba(0,0,0,.15);
-  "
-></div>
-	<button class="btn-cargar" onclick="iniciarEscaner()">
-  📷 Escanear código
-	</button>
-	<button
-  class="btn-eliminar"
-  onclick="detenerEscaner()"
-  style="width:100%;"
->
-  Cerrar escáner
-</button>
+</div>
 
 <div
   id="reader"
@@ -1672,6 +1835,27 @@ function renderCarrito() {
   contenedor.innerHTML = "";
 
   let total = 0;
+if (POS.carrito.length === 0) {
+
+  contenedor.innerHTML = `
+    <div class="carrito-vacio">
+
+      <div class="carrito-vacio-icono">
+        🛒
+      </div>
+
+      <div class="carrito-vacio-titulo">
+        No hay productos
+      </div>
+
+      <div>
+        Escanea un código o busca un producto.
+      </div>
+
+    </div>
+  `;
+
+}
 
   POS.carrito.forEach(item => {
 
@@ -1877,6 +2061,7 @@ document.getElementById("datosClienteCredito").style.display = "none";
   cambiarMetodoPago();
 
   document.getElementById("buscador").value = "";
+	document.getElementById("buscador").focus();
 
 }
 
@@ -2244,6 +2429,16 @@ function beep() {
   }, 70);
 
 }
+function alternarEscaner() {
+
+  if (POS.escaneando) {
+    detenerEscaner();
+    return;
+  }
+
+  iniciarEscaner();
+
+}
 function iniciarEscaner() {
 
   if (POS.escaneando) return;
@@ -2252,6 +2447,14 @@ function iniciarEscaner() {
 
   POS.escaner = new Html5Qrcode("reader");
   POS.escaneando = true;
+
+	const btnEscaner =
+  document.getElementById("btnEscanerCompacto");
+
+if (btnEscaner) {
+  btnEscaner.innerText = "✕";
+  btnEscaner.classList.add("activo");
+}
 
   POS.escaner.start(
     { facingMode: "environment" },
@@ -2343,6 +2546,14 @@ document.getElementById("prodCodigo").value = codigo;
 }
 function detenerEscaner() {
 
+	const btnEscaner =
+  document.getElementById("btnEscanerCompacto");
+
+if (btnEscaner) {
+  btnEscaner.innerText = "📷";
+  btnEscaner.classList.remove("activo");
+}
+
   if (!POS.escaner) {
 
     document.getElementById("reader").style.display = "none";
@@ -2370,8 +2581,13 @@ function detenerEscaner() {
     document.getElementById("reader").style.display = "none";
 
   });
+const buscador =
+  document.getElementById("buscador");
 
+if (buscador) {
+  buscador.focus();
 }
+
 // ==================================================
 // ADMINISTRACIÓN
 // ==================================================	
