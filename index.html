@@ -1884,6 +1884,7 @@ function editarProductoAdmin(codigo) {
 //OFFLINE
 //
 function actualizarEstadoConexion() {
+
   const indicador =
     document.getElementById(
       "estadoConexion"
@@ -1891,9 +1892,18 @@ function actualizarEstadoConexion() {
 
   if (!indicador) return;
 
+  const pendientes =
+    cantidadVentasPendientes();
+
   if (navigator.onLine) {
+
     indicador.innerText =
-      "● Online";
+      pendientes > 0
+        ? "● Online · " +
+          pendientes +
+          " pendiente" +
+          (pendientes === 1 ? "" : "s")
+        : "● Online";
 
     indicador.classList.remove(
       "offline"
@@ -1904,8 +1914,14 @@ function actualizarEstadoConexion() {
     );
 
   } else {
+
     indicador.innerText =
-      "● Offline";
+      pendientes > 0
+        ? "● Offline · " +
+          pendientes +
+          " pendiente" +
+          (pendientes === 1 ? "" : "s")
+        : "● Offline";
 
     indicador.classList.remove(
       "online"
@@ -1917,24 +1933,308 @@ function actualizarEstadoConexion() {
   }
 }
 
+// ==================================================
+// COLA LOCAL DE VENTAS
+// ==================================================
 
+const CLAVE_VENTAS_PENDIENTES =
+  "POS_VENTAS_PENDIENTES";
+
+
+function obtenerVentasPendientes() {
+
+  const texto = localStorage.getItem(
+    CLAVE_VENTAS_PENDIENTES
+  );
+
+  if (!texto) {
+    return [];
+  }
+
+  try {
+
+    const ventas = JSON.parse(texto);
+
+    return Array.isArray(ventas)
+      ? ventas
+      : [];
+
+  } catch (error) {
+
+    console.error(
+      "La cola local de ventas está dañada:",
+      error
+    );
+
+    return [];
+  }
+}
+
+
+function guardarVentasPendientes(ventas) {
+
+  localStorage.setItem(
+    CLAVE_VENTAS_PENDIENTES,
+    JSON.stringify(ventas)
+  );
+
+  actualizarEstadoConexion();
+}
+
+
+function agregarVentaPendiente(venta) {
+
+  const ventas =
+    obtenerVentasPendientes();
+
+  const yaExiste = ventas.some(
+    item =>
+      String(item.venta.folio) ===
+      String(venta.folio)
+  );
+
+  if (yaExiste) {
+    return false;
+  }
+
+  ventas.push({
+    venta: venta,
+    estado: "PENDIENTE",
+    fechaLocal: new Date().toISOString(),
+    intentos: 0,
+    ultimoError: ""
+  });
+
+  guardarVentasPendientes(ventas);
+
+  return true;
+}
+
+
+function cantidadVentasPendientes() {
+
+  return obtenerVentasPendientes().length;
+}
+async function enviarVentaAlServidor(
+  venta
+) {
+
+  const url =
+    API_URL +
+    "?action=guardarVenta&data=" +
+    encodeURIComponent(
+      JSON.stringify(venta)
+    );
+
+  const respuesta = await fetch(
+    url,
+    {
+      cache: "no-store"
+    }
+  );
+
+  if (!respuesta.ok) {
+    throw new Error(
+      "Respuesta HTTP " +
+      respuesta.status
+    );
+  }
+
+  const texto =
+    await respuesta.text();
+
+  let data;
+
+  try {
+
+    data = JSON.parse(texto);
+
+  } catch (error) {
+
+    throw new Error(
+      "Apps Script no respondió JSON"
+    );
+  }
+
+  return data;
+}
+let sincronizandoVentas = false;
+
+
+async function sincronizarVentasPendientes() {
+
+  if (sincronizandoVentas) {
+    return;
+  }
+
+  if (!navigator.onLine) {
+    return;
+  }
+
+  let pendientes =
+    obtenerVentasPendientes();
+
+  if (pendientes.length === 0) {
+    actualizarEstadoConexion();
+    return;
+  }
+
+  sincronizandoVentas = true;
+
+  mostrarMensaje(
+    "🔄 Sincronizando " +
+    pendientes.length +
+    " venta" +
+    (pendientes.length === 1 ? "" : "s") +
+    "..."
+  );
+
+  const restantes = [];
+
+  let sincronizadas = 0;
+
+  for (const registro of pendientes) {
+
+    try {
+
+      registro.intentos =
+        Number(registro.intentos || 0) + 1;
+
+      const data =
+        await enviarVentaAlServidor(
+          registro.venta
+        );
+
+      if (data.ok) {
+
+        // También se elimina si el backend responde
+        // que el folio ya estaba sincronizado.
+        sincronizadas++;
+
+      } else {
+
+        registro.estado = "ERROR";
+        registro.ultimoError =
+          data.mensaje ||
+          "El servidor rechazó la venta";
+
+        restantes.push(registro);
+      }
+
+    } catch (error) {
+
+      registro.estado = "PENDIENTE";
+      registro.ultimoError =
+        error.message;
+
+      restantes.push(registro);
+
+      // Si se volvió a perder la conexión,
+      // no seguimos enviando.
+      if (!navigator.onLine) {
+
+        const indiceActual =
+          pendientes.indexOf(registro);
+
+        const faltantes =
+          pendientes.slice(
+            indiceActual + 1
+          );
+
+        restantes.push(...faltantes);
+
+        break;
+      }
+    }
+  }
+
+  guardarVentasPendientes(
+    restantes
+  );
+
+  sincronizandoVentas = false;
+
+  if (sincronizadas > 0) {
+
+    mostrarMensaje(
+      "✅ " +
+      sincronizadas +
+      " venta" +
+      (sincronizadas === 1 ? "" : "s") +
+      " sincronizada" +
+      (sincronizadas === 1 ? "" : "s")
+    );
+
+    await cargarProductos();
+  }
+
+  if (restantes.length > 0) {
+
+    mostrarMensaje(
+      "⚠️ Quedan " +
+      restantes.length +
+      " venta" +
+      (restantes.length === 1 ? "" : "s") +
+      " pendiente" +
+      (restantes.length === 1 ? "" : "s"),
+      "error"
+    );
+  }
+
+  actualizarEstadoConexion();
+}
+function descontarInventarioLocal(
+  venta
+) {
+
+  venta.items.forEach(itemVenta => {
+
+    const producto =
+      POS.productos.find(
+        producto =>
+          String(producto.codigo) ===
+          String(itemVenta.codigo)
+      );
+
+    if (!producto) {
+      return;
+    }
+
+    producto.existencia =
+      Number(producto.existencia || 0) -
+      Number(itemVenta.cantidad || 0);
+  });
+
+  localStorage.setItem(
+    "POS_PRODUCTOS_OFFLINE",
+    JSON.stringify(POS.productos)
+  );
+}
+
+
+// ==================================================
+// EVENTO DE CONEXION
+// ==================================================
+	
 window.addEventListener(
   "online",
-  () => {
+  async () => {
+
     actualizarEstadoConexion();
 
     mostrarMensaje(
       "🌐 Conexión restablecida"
     );
 
-    cargarProductos();
+    await sincronizarVentasPendientes();
+
+    await cargarProductos();
   }
 );
-
-
 window.addEventListener(
   "offline",
   () => {
+
     actualizarEstadoConexion();
 
     mostrarMensaje(
@@ -1943,7 +2243,6 @@ window.addEventListener(
     );
   }
 );
-	
 // ==================================================
 // CARRITO
 // ==================================================
@@ -2378,94 +2677,165 @@ async function guardarVenta() {
   );
 
   const metodoPago =
-    document.getElementById("metodoPago").value;
+    document.getElementById(
+      "metodoPago"
+    ).value;
 
   const textoRecibido =
-    document.getElementById("importeRecibido").value.trim();
+    document.getElementById(
+      "importeRecibido"
+    ).value.trim();
 
   const recibido =
     Number(textoRecibido || 0);
 
   const idCliente =
-    document.getElementById("clienteCredito").value;
+    document.getElementById(
+      "clienteCredito"
+    ).value;
 
   const fechaLimiteCredito =
-    document.getElementById("fechaLimiteCredito").value;
+    document.getElementById(
+      "fechaLimiteCredito"
+    ).value;
 
   const observacionCredito =
     document
-      .getElementById("observacionCredito")
+      .getElementById(
+        "observacionCredito"
+      )
       .value
       .trim();
 
+
   // ==============================================
-  // VALIDACIÓN EFECTIVO
+  // VALIDAR EFECTIVO
   // ==============================================
 
   if (metodoPago === "EFECTIVO") {
 
     if (textoRecibido === "") {
-      alert("Ingresa el importe recibido");
+
+      alert(
+        "Ingresa el importe recibido"
+      );
+
       return;
     }
 
     if (recibido < total) {
-      alert("El importe recibido es menor al total");
+
+      alert(
+        "El importe recibido es menor al total"
+      );
+
       return;
     }
-
   }
 
+
   // ==============================================
-  // VALIDACIÓN CRÉDITO
+  // VALIDAR CRÉDITO
   // ==============================================
 
   if (metodoPago === "CREDITO") {
 
-    if (idCliente === "") {
-      alert("Selecciona el cliente de crédito");
+    if (!navigator.onLine) {
+
+      alert(
+        "Las ventas a crédito requieren conexión " +
+        "para validar el saldo y límite del cliente."
+      );
+
       return;
     }
 
-    const cliente = POS.clientes.find(
-      c => String(c.id) === String(idCliente)
-    );
+    if (idCliente === "") {
+
+      alert(
+        "Selecciona el cliente de crédito"
+      );
+
+      return;
+    }
+
+    const cliente =
+      POS.clientes.find(
+        item =>
+          String(item.id) ===
+          String(idCliente)
+      );
 
     if (!cliente) {
-      alert("El cliente seleccionado no es válido");
+
+      alert(
+        "El cliente seleccionado no es válido"
+      );
+
       return;
     }
 
     const limite =
-      Number(cliente.limiteCredito || 0);
+      Number(
+        cliente.limiteCredito || 0
+      );
 
     const saldo =
-      Number(cliente.saldo || 0);
+      Number(
+        cliente.saldo || 0
+      );
 
     const disponible =
       limite - saldo;
 
     if (total > disponible) {
+
       alert(
         "Crédito insuficiente.\n" +
         "Disponible: $" +
-        Math.max(0, disponible).toFixed(2)
+        Math.max(
+          0,
+          disponible
+        ).toFixed(2)
       );
+
       return;
     }
 
     if (fechaLimiteCredito === "") {
-      alert("Captura la fecha límite de pago");
+
+      alert(
+        "Captura la fecha límite de pago"
+      );
+
       return;
     }
-
   }
 
+
+  // ==============================================
+  // CONSTRUIR VENTA
+  // ==============================================
+
   const venta = {
-    folio: "V-" + Date.now(),
-    usuario: POS.usuario,
-    total: total,
-    metodoPago: metodoPago,
+
+    folio:
+      "V-" +
+      Date.now() +
+      "-" +
+      Math.random()
+        .toString(36)
+        .slice(2, 7)
+        .toUpperCase(),
+
+    usuario:
+      POS.usuario,
+
+    total:
+      total,
+
+    metodoPago:
+      metodoPago,
 
     idCliente:
       metodoPago === "CREDITO"
@@ -2482,57 +2852,143 @@ async function guardarVenta() {
         ? observacionCredito
         : "",
 
-    items: POS.carrito
+    items:
+      POS.carrito.map(item => ({
+        codigo:
+          item.codigo,
+
+        producto:
+          item.producto,
+
+        precio:
+          Number(item.precio || 0),
+
+        costo:
+          Number(item.costo || 0),
+
+        cantidad:
+          Number(item.cantidad || 0),
+
+        unidad:
+          item.unidad || "PZ",
+
+        consignacion:
+          item.consignacion || "PROPIO"
+      }))
   };
+
+
+  // ==============================================
+  // SI NO HAY CONEXIÓN: GUARDAR LOCALMENTE
+  // ==============================================
+
+  if (!navigator.onLine) {
+
+    const guardada =
+      agregarVentaPendiente(
+        venta
+      );
+
+    if (!guardada) {
+
+      alert(
+        "La venta ya existe en la cola local"
+      );
+
+      return;
+    }
+
+    descontarInventarioLocal(
+      venta
+    );
+
+    limpiarOperacion();
+
+    alert(
+      "📴 Venta guardada sin conexión.\n\n" +
+      "Folio: " +
+      venta.folio +
+      "\n\nSe sincronizará cuando vuelva internet."
+    );
+
+    actualizarEstadoConexion();
+
+    return;
+  }
+
+
+  // ==============================================
+  // INTENTAR GUARDAR ONLINE
+  // ==============================================
 
   try {
 
-    const url =
-      API_URL +
-      "?action=guardarVenta&data=" +
-      encodeURIComponent(
-        JSON.stringify(venta)
+    const data =
+      await enviarVentaAlServidor(
+        venta
       );
-
-    const respuesta =
-      await fetch(url);
-
-    const texto =
-      await respuesta.text();
-
-    let data;
-
-    try {
-      data = JSON.parse(texto);
-    } catch (error) {
-      alert(
-        "Apps Script no respondió JSON.\n" +
-        "Revisa si la venta se guardó antes de intentar nuevamente."
-      );
-      return;
-    }
 
     if (!data.ok) {
+
       alert(
         "Error: " +
-        (data.mensaje || "No fue posible guardar la venta")
+        (
+          data.mensaje ||
+          "No fue posible guardar la venta"
+        )
       );
+
       return;
     }
 
-    alert("✅ " + data.mensaje);
+    alert(
+      "✅ " +
+      data.mensaje
+    );
 
     limpiarOperacion();
 
     await cargarProductos();
 
   } catch (error) {
-    alert(
-      "Error de conexión: " +
-      error.message
-    );
-  }
 
+    /*
+      Puede ocurrir que Apps Script sí haya recibido
+      la venta, pero la respuesta no haya regresado.
+
+      Guardamos el mismo folio en la cola.
+      El backend evitará duplicarla al sincronizar.
+    */
+
+    const guardada =
+      agregarVentaPendiente(
+        venta
+      );
+
+    if (guardada) {
+
+      descontarInventarioLocal(
+        venta
+      );
+
+      limpiarOperacion();
+
+      alert(
+        "⚠️ No fue posible confirmar la conexión.\n\n" +
+        "La venta quedó protegida en la cola local.\n" +
+        "Folio: " +
+        venta.folio
+      );
+
+      actualizarEstadoConexion();
+
+    } else {
+
+      alert(
+        "La venta ya se encuentra pendiente de sincronización."
+      );
+    }
+  }
 }
 async function guardarCompra() {
 
@@ -4231,6 +4687,21 @@ window.addEventListener("popstate", manejarAtrasApp);
 history.pushState(null, "", location.href);
 	
 window.addEventListener("load", cargarSesion);
+window.addEventListener(
+  "load",
+  () => {
+
+    actualizarEstadoConexion();
+
+    setTimeout(() => {
+
+      if (navigator.onLine) {
+        sincronizarVentasPendientes();
+      }
+
+    }, 1500);
+  }
+);
 	window.addEventListener(
   "load",
   actualizarEstadoConexion
