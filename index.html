@@ -1208,6 +1208,10 @@ button {
 
 	
 const API_URL = "https://script.google.com/macros/s/AKfycbz2mzbagjmu6tQH-28eyPfFRdm5z1A33CepLmeXCRbB93VaJftw_jaDyMosSVz5Mbx6ZA/exec";
+const LIMITE_CREDITO_OFFLINE = 1000;
+
+const CLAVE_CLIENTES_OFFLINE =
+  "POS_CLIENTES_OFFLINE";
 
 
 // ==================================================
@@ -1883,6 +1887,188 @@ function editarProductoAdmin(codigo) {
 //
 //OFFLINE
 //
+function guardarClientesOffline(
+  clientes
+) {
+
+  localStorage.setItem(
+    CLAVE_CLIENTES_OFFLINE,
+    JSON.stringify(clientes || [])
+  );
+
+  localStorage.setItem(
+    "POS_CLIENTES_FECHA",
+    new Date().toISOString()
+  );
+}
+
+
+function obtenerClientesOffline() {
+
+  const texto =
+    localStorage.getItem(
+      CLAVE_CLIENTES_OFFLINE
+    );
+
+  if (!texto) {
+    return [];
+  }
+
+  try {
+
+    const clientes =
+      JSON.parse(texto);
+
+    return Array.isArray(clientes)
+      ? clientes
+      : [];
+
+  } catch (error) {
+
+    console.error(
+      "No fue posible leer los clientes offline:",
+      error
+    );
+
+    return [];
+  }
+}
+function obtenerCreditoPendienteCliente(
+  idCliente
+) {
+
+  const pendientes =
+    obtenerVentasPendientes();
+
+  return pendientes.reduce(
+    (total, registro) => {
+
+      const venta =
+        registro.venta || {};
+
+      const esCredito =
+        String(
+          venta.metodoPago || ""
+        ).toUpperCase() ===
+        "CREDITO";
+
+      const mismoCliente =
+        String(
+          venta.idCliente || ""
+        ) ===
+        String(idCliente);
+
+      if (
+        esCredito &&
+        mismoCliente
+      ) {
+        return (
+          total +
+          Number(venta.total || 0)
+        );
+      }
+
+      return total;
+    },
+    0
+  );
+}
+function calcularCreditoDisponibleOffline(
+  cliente
+) {
+
+  const limite =
+    Number(
+      cliente.limiteCredito || 0
+    );
+
+  const saldoSincronizado =
+    Number(
+      cliente.saldo || 0
+    );
+
+  const creditoPendiente =
+    obtenerCreditoPendienteCliente(
+      cliente.id
+    );
+
+  const disponibleEstimado =
+    limite -
+    saldoSincronizado -
+    creditoPendiente;
+
+  return Math.max(
+    0,
+    Math.min(
+      disponibleEstimado,
+      LIMITE_CREDITO_OFFLINE
+    )
+  );
+}
+function llenarSelectorClientesCredito(
+  clientes
+) {
+
+  const selector =
+    document.getElementById(
+      "clienteCredito"
+    );
+
+  POS.clientes =
+    (clientes || []).filter(
+      cliente =>
+        String(
+          cliente.activo || ""
+        ).toUpperCase() ===
+        "SI"
+    );
+
+  selector.innerHTML = `
+    <option value="">
+      Selecciona un cliente
+    </option>
+  `;
+
+  POS.clientes.forEach(cliente => {
+
+    const limite =
+      Number(
+        cliente.limiteCredito || 0
+      );
+
+    const saldo =
+      Number(
+        cliente.saldo || 0
+      );
+
+    const disponible =
+      navigator.onLine
+        ? Math.max(
+            0,
+            limite - saldo
+          )
+        : calcularCreditoDisponibleOffline(
+            cliente
+          );
+
+    const opcion =
+      document.createElement(
+        "option"
+      );
+
+    opcion.value =
+      cliente.id;
+
+    opcion.textContent =
+      cliente.nombre +
+      " · Disponible $" +
+      disponible.toFixed(2);
+
+    selector.appendChild(
+      opcion
+    );
+  });
+}
 function actualizarEstadoConexion() {
 
   const indicador =
@@ -2113,13 +2299,25 @@ async function sincronizarVentasPendientes() {
 
       } else {
 
-        registro.estado = "ERROR";
-        registro.ultimoError =
-          data.mensaje ||
-          "El servidor rechazó la venta";
+  const esCredito =
+    String(
+      registro.venta.metodoPago || ""
+    ).toUpperCase() ===
+    "CREDITO";
 
-        restantes.push(registro);
-      }
+  registro.estado =
+    esCredito
+      ? "CONFLICTO_CREDITO"
+      : "ERROR";
+
+  registro.ultimoError =
+    data.mensaje ||
+    "El servidor rechazó la venta";
+
+  restantes.push(
+    registro
+  );
+}
 
     } catch (error) {
 
@@ -2227,6 +2425,7 @@ window.addEventListener(
     );
 
     await sincronizarVentasPendientes();
+	await cargarClientesParaCredito();
 
     await cargarProductos();
   }
@@ -2740,15 +2939,6 @@ async function guardarVenta() {
 
   if (metodoPago === "CREDITO") {
 
-    if (!navigator.onLine) {
-
-      alert(
-        "Las ventas a crédito requieren conexión " +
-        "para validar el saldo y límite del cliente."
-      );
-
-      return;
-    }
 
     if (idCliente === "") {
 
@@ -2785,8 +2975,12 @@ async function guardarVenta() {
         cliente.saldo || 0
       );
 
-    const disponible =
-      limite - saldo;
+   const disponible =
+  navigator.onLine
+    ? limite - saldo
+    : calcularCreditoDisponibleOffline(
+        cliente
+      );
 
     if (total > disponible) {
 
@@ -2901,8 +3095,7 @@ async function guardarVenta() {
     descontarInventarioLocal(
       venta
     );
-
-    limpiarOperacion();
+	    limpiarOperacion();
 
     alert(
       "📴 Venta guardada sin conexión.\n\n" +
@@ -3771,8 +3964,11 @@ function escaparAtributo(valor) {
 }	
 
 async function cargarClientesParaCredito() {
+
   const selector =
-    document.getElementById("clienteCredito");
+    document.getElementById(
+      "clienteCredito"
+    );
 
   selector.innerHTML = `
     <option value="">
@@ -3781,64 +3977,84 @@ async function cargarClientesParaCredito() {
   `;
 
   try {
-    const respuesta = await fetch(
-      API_URL + "?action=clientes"
-    );
 
-    const data = await respuesta.json();
+    const respuesta =
+      await fetch(
+        API_URL +
+        "?action=clientes",
+        {
+          cache: "no-store"
+        }
+      );
+
+    if (!respuesta.ok) {
+      throw new Error(
+        "Respuesta HTTP " +
+        respuesta.status
+      );
+    }
+
+    const data =
+      await respuesta.json();
 
     if (!data.ok) {
+      throw new Error(
+        data.mensaje ||
+        "No fue posible cargar clientes"
+      );
+    }
+
+    const clientesActivos =
+      (data.clientes || []).filter(
+        cliente =>
+          String(
+            cliente.activo || ""
+          ).toUpperCase() ===
+          "SI"
+      );
+
+    guardarClientesOffline(
+      clientesActivos
+    );
+
+    llenarSelectorClientesCredito(
+      clientesActivos
+    );
+
+  } catch (error) {
+
+    const clientesLocales =
+      obtenerClientesOffline();
+
+    if (
+      clientesLocales.length === 0
+    ) {
+
+      POS.clientes = [];
+
       selector.innerHTML = `
         <option value="">
-          No fue posible cargar clientes
+          Sin conexión y sin clientes guardados
         </option>
       `;
+
+      mostrarMensaje(
+        "❌ No hay catálogo local de clientes.",
+        "error"
+      );
+
       return;
     }
 
-    POS.clientes = (data.clientes || []).filter(
-      cliente => cliente.activo === "SI"
+    llenarSelectorClientesCredito(
+      clientesLocales
     );
 
-    selector.innerHTML = `
-      <option value="">
-        Selecciona un cliente
-      </option>
-    `;
-
-    POS.clientes.forEach(cliente => {
-      const saldo =
-        Number(cliente.saldo || 0);
-
-      const limite =
-        Number(cliente.limiteCredito || 0);
-
-      const disponible =
-        Math.max(0, limite - saldo);
-
-      const opcion =
-        document.createElement("option");
-
-      opcion.value = cliente.id;
-
-      opcion.textContent =
-        cliente.nombre +
-        " · Disponible $" +
-        disponible.toFixed(2);
-
-      selector.appendChild(opcion);
-    });
-
-  } catch (error) {
-    selector.innerHTML = `
-      <option value="">
-        Error de conexión
-      </option>
-    `;
+    mostrarMensaje(
+      "📴 Clientes cargados desde el dispositivo."
+    );
   }
 }
-
-
 function mostrarDatosClienteCredito() {
   const idCliente =
     document.getElementById("clienteCredito").value;
@@ -3878,30 +4094,87 @@ function mostrarDatosClienteCredito() {
     0
   );
 
-  const saldoDespues =
-    saldo + totalVenta;
+  const creditoPendiente =
+  obtenerCreditoPendienteCliente(
+    cliente.id
+  );
 
-  const permitido =
-    saldoDespues <= limite;
+const disponible =
+  navigator.onLine
+    ? Math.max(
+        0,
+        limite - saldo
+      )
+    : calcularCreditoDisponibleOffline(
+        cliente
+      );
 
-  bloque.innerHTML = `
-    <strong>${escaparHTML(cliente.nombre)}</strong><br>
-    Límite: $${limite.toFixed(2)}<br>
-    Saldo actual: $${saldo.toFixed(2)}<br>
-    Disponible: $${disponible.toFixed(2)}<br>
-    Nueva venta: $${totalVenta.toFixed(2)}<br>
+const totalVenta =
+  POS.carrito.reduce(
+    (suma, item) =>
+      suma +
+      Number(item.cantidad || 0) *
+      Number(item.precio || 0),
+    0
+  );
 
-    <strong style="
-      color:${permitido ? "#166534" : "#b91c1c"};
-    ">
-      ${
+const permitido =
+  totalVenta <= disponible;
+
+ bloque.innerHTML = `
+  <strong>
+    ${escaparHTML(cliente.nombre)}
+  </strong>
+  <br>
+
+  Límite:
+  $${limite.toFixed(2)}
+  <br>
+
+  Saldo sincronizado:
+  $${saldo.toFixed(2)}
+  <br>
+
+  ${
+    navigator.onLine
+      ? ""
+      : `
+        Crédito pendiente offline:
+        $${creditoPendiente.toFixed(2)}
+        <br>
+
+        Tope offline:
+        $${LIMITE_CREDITO_OFFLINE.toFixed(2)}
+        <br>
+      `
+  }
+
+  Disponible:
+  $${disponible.toFixed(2)}
+  <br>
+
+  Nueva venta:
+  $${totalVenta.toFixed(2)}
+  <br>
+
+  <strong
+    style="
+      color:${
         permitido
+          ? "#166534"
+          : "#b91c1c"
+      };
+    "
+  >
+    ${
+      permitido
+        ? navigator.onLine
           ? "✅ Crédito disponible"
-          : "❌ Crédito insuficiente"
-      }
-    </strong>
-  `;
-
+          : "📴 Crédito offline disponible"
+        : "❌ Crédito insuficiente"
+    }
+  </strong>
+`;
   bloque.style.background =
     permitido
       ? "#f0fdf4"
