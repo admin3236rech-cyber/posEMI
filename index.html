@@ -4056,134 +4056,146 @@ async function cargarClientesParaCredito() {
   }
 }
 function mostrarDatosClienteCredito() {
+
   const idCliente =
-    document.getElementById("clienteCredito").value;
+    document.getElementById(
+      "clienteCredito"
+    ).value;
 
   const bloque =
-    document.getElementById("datosClienteCredito");
+    document.getElementById(
+      "datosClienteCredito"
+    );
 
   if (idCliente === "") {
-    bloque.style.display = "none";
-    bloque.innerHTML = "";
+
+    bloque.style.display =
+      "none";
+
+    bloque.innerHTML =
+      "";
+
     return;
   }
 
-  const cliente = POS.clientes.find(
-    c => String(c.id) === String(idCliente)
-  );
+  const cliente =
+    POS.clientes.find(
+      cliente =>
+        String(cliente.id) ===
+        String(idCliente)
+    );
 
   if (!cliente) {
-    bloque.style.display = "none";
+
+    bloque.style.display =
+      "none";
+
+    bloque.innerHTML =
+      "";
+
     return;
   }
 
   const limite =
-    Number(cliente.limiteCredito || 0);
+    Number(
+      cliente.limiteCredito || 0
+    );
 
   const saldo =
-    Number(cliente.saldo || 0);
-
-  const disponible =
-    Math.max(0, limite - saldo);
-
-  const totalVenta = POS.carrito.reduce(
-    (suma, item) =>
-      suma +
-      Number(item.cantidad || 0) *
-      Number(item.precio || 0),
-    0
-  );
+    Number(
+      cliente.saldo || 0
+    );
 
   const creditoPendiente =
-  obtenerCreditoPendienteCliente(
-    cliente.id
-  );
+    obtenerCreditoPendienteCliente(
+      cliente.id
+    );
 
-const disponible =
-  navigator.onLine
-    ? Math.max(
-        0,
-        limite - saldo
-      )
-    : calcularCreditoDisponibleOffline(
-        cliente
-      );
-
-const totalVenta =
-  POS.carrito.reduce(
-    (suma, item) =>
-      suma +
-      Number(item.cantidad || 0) *
-      Number(item.precio || 0),
-    0
-  );
-
-const permitido =
-  totalVenta <= disponible;
-
- bloque.innerHTML = `
-  <strong>
-    ${escaparHTML(cliente.nombre)}
-  </strong>
-  <br>
-
-  Límite:
-  $${limite.toFixed(2)}
-  <br>
-
-  Saldo sincronizado:
-  $${saldo.toFixed(2)}
-  <br>
-
-  ${
+  const disponible =
     navigator.onLine
-      ? ""
-      : `
-        Crédito pendiente offline:
-        $${creditoPendiente.toFixed(2)}
-        <br>
+      ? Math.max(
+          0,
+          limite - saldo
+        )
+      : calcularCreditoDisponibleOffline(
+          cliente
+        );
 
-        Tope offline:
-        $${LIMITE_CREDITO_OFFLINE.toFixed(2)}
-        <br>
-      `
-  }
+  const totalVenta =
+    POS.carrito.reduce(
+      (suma, item) =>
+        suma +
+        Number(item.cantidad || 0) *
+        Number(item.precio || 0),
+      0
+    );
 
-  Disponible:
-  $${disponible.toFixed(2)}
-  <br>
+  const permitido =
+    totalVenta <= disponible;
 
-  Nueva venta:
-  $${totalVenta.toFixed(2)}
-  <br>
+  bloque.innerHTML = `
+    <strong>
+      ${escaparHTML(cliente.nombre)}
+    </strong>
+    <br>
 
-  <strong
-    style="
-      color:${
-        permitido
-          ? "#166534"
-          : "#b91c1c"
-      };
-    "
-  >
+    Límite:
+    $${limite.toFixed(2)}
+    <br>
+
+    Saldo sincronizado:
+    $${saldo.toFixed(2)}
+    <br>
+
     ${
-      permitido
-        ? navigator.onLine
-          ? "✅ Crédito disponible"
-          : "📴 Crédito offline disponible"
-        : "❌ Crédito insuficiente"
+      navigator.onLine
+        ? ""
+        : `
+          Crédito pendiente offline:
+          $${creditoPendiente.toFixed(2)}
+          <br>
+
+          Tope offline:
+          $${LIMITE_CREDITO_OFFLINE.toFixed(2)}
+          <br>
+        `
     }
-  </strong>
-`;
+
+    Disponible:
+    $${disponible.toFixed(2)}
+    <br>
+
+    Nueva venta:
+    $${totalVenta.toFixed(2)}
+    <br>
+
+    <strong
+      style="
+        color:${
+          permitido
+            ? "#166534"
+            : "#b91c1c"
+        };
+      "
+    >
+      ${
+        permitido
+          ? navigator.onLine
+            ? "✅ Crédito disponible"
+            : "📴 Crédito offline disponible"
+          : "❌ Crédito insuficiente"
+      }
+    </strong>
+  `;
+
   bloque.style.background =
     permitido
       ? "#f0fdf4"
       : "#fef2f2";
 
-  bloque.style.display = "block";
+  bloque.style.display =
+    "block";
 }
-
-
 function establecerFechaLimiteCredito() {
   const campo =
     document.getElementById("fechaLimiteCredito");
