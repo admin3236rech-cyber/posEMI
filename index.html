@@ -2462,7 +2462,7 @@ async function guardarVenta() {
   }
 
   const venta = {
-    folio: "V-1783989519062",
+    folio: "V-" + Date.now(),
     usuario: POS.usuario,
     total: total,
     metodoPago: metodoPago,
